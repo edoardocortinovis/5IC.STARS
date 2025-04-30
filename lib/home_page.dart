@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -19,7 +19,7 @@ class _HomePageState extends State<HomePage> {
     _loadUserData();
   }
 
-  // Carica i dati dell'utente dalle SharedPreferences
+  // Load user data from SharedPreferences
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -27,13 +27,13 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // Funzione per effettuare il logout
+  // Logout function
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isLoggedIn', false);
     await prefs.remove('username');
-    
-    // Naviga alla pagina di login
+
+    // Navigate to login page using named route
     if (!mounted) return;
     Navigator.pushReplacementNamed(context, '/login');
   }
@@ -60,7 +60,7 @@ class _HomePageState extends State<HomePage> {
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 actions: [
-                  // Pulsante di logout
+                  // Logout button
                   IconButton(
                     icon: const Icon(Icons.logout, color: Color(0xFF5E17EB)),
                     onPressed: _logout,
@@ -86,9 +86,12 @@ class _HomePageState extends State<HomePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Benvenuto utente
+                      // Welcome user
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 15,
+                        ),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [Color(0xFF4776E6), Color(0xFF8E54E9)],
@@ -142,10 +145,10 @@ class _HomePageState extends State<HomePage> {
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 30),
-                      
-                      // Sezione 1 - Gioco 1
+
+                      // Section 1 - Game 1
                       _buildFeatureCard(
                         title: 'GIOCO 1',
                         icon: FontAwesomeIcons.gamepad,
@@ -155,13 +158,13 @@ class _HomePageState extends State<HomePage> {
                           end: Alignment.bottomRight,
                         ),
                         onTap: () {
-                          // Navigazione al gioco 1
+                          // Navigate to game 1
                         },
                       ),
-                      
+
                       const SizedBox(height: 20),
-                      
-                      // Sezione 2 - Gioco 2
+
+                      // Section 2 - Game 2
                       _buildFeatureCard(
                         title: 'GIOCO 2',
                         icon: FontAwesomeIcons.dice,
@@ -170,14 +173,14 @@ class _HomePageState extends State<HomePage> {
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
-                       onTap: () {
-                          // Navigazione al gioco 2
+                        onTap: () {
+                          // Navigate to game 2
                         },
                       ),
-                      
+
                       const SizedBox(height: 20),
-                      
-                      // Sezione 3 - Ricordi
+
+                      // Section 3 - Memories
                       _buildFeatureCard(
                         title: 'RICORDI',
                         icon: FontAwesomeIcons.photoFilm,
@@ -188,13 +191,13 @@ class _HomePageState extends State<HomePage> {
                         ),
                         height: 180,
                         onTap: () {
-                          // Navigazione alla sezione ricordi
+                          // Navigate to memories section
                         },
                       ),
-                      
+
                       const SizedBox(height: 20),
-                      
-                      // Sezione 4 - Due card quadrate
+
+                      // Section 4 - Two square cards
                       Row(
                         children: [
                           Expanded(
@@ -207,7 +210,7 @@ class _HomePageState extends State<HomePage> {
                                 end: Alignment.bottomRight,
                               ),
                               onTap: () {
-                                // Navigazione alla classifica
+                                // Navigate to ranking
                               },
                             ),
                           ),
@@ -222,13 +225,13 @@ class _HomePageState extends State<HomePage> {
                                 end: Alignment.bottomRight,
                               ),
                               onTap: () {
-                                // Navigazione alle interviste
+                                // Navigate to interviews
                               },
                             ),
                           ),
                         ],
                       ),
-                      
+
                       const SizedBox(height: 30),
                     ],
                   ),
@@ -265,7 +268,7 @@ class _HomePageState extends State<HomePage> {
         ),
         child: Stack(
           children: [
-            // Pattern decorativo
+            // Decorative pattern
             Positioned(
               right: -30,
               bottom: -30,
@@ -275,17 +278,13 @@ class _HomePageState extends State<HomePage> {
                 color: Colors.white.withOpacity(0.15),
               ),
             ),
-            // Contenuto principale
+            // Main content
             Padding(
               padding: const EdgeInsets.all(24.0),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  FaIcon(
-                    icon,
-                    size: 40,
-                    color: Colors.white,
-                  ),
+                  FaIcon(icon, size: 40, color: Colors.white),
                   const SizedBox(width: 20),
                   Expanded(
                     child: Text(
@@ -331,7 +330,7 @@ class _HomePageState extends State<HomePage> {
           ),
           child: Stack(
             children: [
-              // Pattern decorativo
+              // Decorative pattern
               Positioned(
                 right: -20,
                 bottom: -20,
@@ -341,18 +340,14 @@ class _HomePageState extends State<HomePage> {
                   color: Colors.white.withOpacity(0.15),
                 ),
               ),
-              // Contenuto principale
+              // Main content
               Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    FaIcon(
-                      icon,
-                      size: 32,
-                      color: Colors.white,
-                    ),
+                    FaIcon(icon, size: 32, color: Colors.white),
                     const SizedBox(height: 12),
                     Text(
                       title,

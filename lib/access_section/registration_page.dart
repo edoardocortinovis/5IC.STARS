@@ -1,9 +1,11 @@
+// lib/access_section/registration_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as p;
 
-// Modello Utente
+// User Model
 class User {
   final int? id;
   final String nome;
@@ -55,7 +57,7 @@ class DatabaseHelper {
 
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
-    final path = join(dbPath, filePath);
+    final path = p.join(dbPath, filePath);
 
     return await openDatabase(path, version: 1, onCreate: _createDB);
   }
@@ -97,9 +99,22 @@ class DatabaseHelper {
     final result = await db.query('users');
     return result.map((map) => User.fromMap(map)).toList();
   }
+
+  Future<User?> authenticateUser(String username, String password) async {
+    final db = await instance.database;
+    final maps = await db.query(
+      'users',
+      where: 'username = ? AND password = ?',
+      whereArgs: [username, password],
+    );
+    if (maps.isNotEmpty) {
+      return User.fromMap(maps.first);
+    }
+    return null;
+  }
 }
 
-// Pagina di Registrazione
+// Registration Page
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({super.key});
 
@@ -119,6 +134,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
   bool _isConfirmPasswordVisible = false;
   bool _isLoading = false;
 
+  // Widget per messaggi di errore/successo
+  Widget _messageWidget = const SizedBox.shrink();
+
   @override
   void dispose() {
     _nomeController.dispose();
@@ -129,72 +147,122 @@ class _RegistrationPageState extends State<RegistrationPage> {
     super.dispose();
   }
 
+  void _showErrorMessage(String message) {
+    setState(() {
+      _messageWidget = Container(
+        padding: const EdgeInsets.all(10),
+        margin: const EdgeInsets.only(bottom: 20),
+        decoration: BoxDecoration(
+          color: Colors.red.shade100,
+          border: Border.all(color: Colors.red),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.red),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        setState(() {
+          _messageWidget = const SizedBox.shrink();
+        });
+      }
+    });
+  }
+
+  void _showSuccessMessage(String message) {
+    setState(() {
+      _messageWidget = Container(
+        padding: const EdgeInsets.all(10),
+        margin: const EdgeInsets.only(bottom: 20),
+        decoration: BoxDecoration(
+          color: Colors.green.shade100,
+          border: Border.all(color: Colors.green),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.check_circle_outline, color: Colors.green),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(color: Colors.green),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        setState(() {
+          _messageWidget = const SizedBox.shrink();
+        });
+      }
+    });
+  }
+
   Future<void> _register() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+    if (!_formKey.currentState!.validate()) return;
 
-      try {
-        // Controllo se l'username è già esistente
-        User? existingUser = await DatabaseHelper.instance.getUser(
-          _usernameController.text,
-        );
+    setState(() {
+      _isLoading = true;
+      _messageWidget = const SizedBox.shrink();
+    });
 
-        if (existingUser != null) {
-          _showErrorSnackBar('Username già in uso. Scegli un altro username.');
-          return;
+    try {
+      // Verifica username esistente
+      final existingUser = await DatabaseHelper.instance
+          .getUser(_usernameController.text.trim());
+      if (existingUser != null) {
+        _showErrorMessage('Username già in uso. Scegli un altro username.');
+        return;
+      }
+
+      // Crea utente e salva nel DB
+      final newUser = User(
+        nome: _nomeController.text.trim(),
+        cognome: _cognomeController.text.trim(),
+        username: _usernameController.text.trim(),
+        password: _passwordController.text,
+      );
+      await DatabaseHelper.instance.createUser(newUser);
+
+      _showSuccessMessage('Registrazione completata con successo!');
+      _formKey.currentState!.reset();
+      _nomeController.clear();
+      _cognomeController.clear();
+      _usernameController.clear();
+      _passwordController.clear();
+      _confirmPasswordController.clear();
+
+      Future.delayed(const Duration(milliseconds: 1500), () {
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/login');
         }
-
-        // Creo il nuovo utente
-        User newUser = User(
-          nome: _nomeController.text.trim(),
-          cognome: _cognomeController.text.trim(),
-          username: _usernameController.text.trim(),
-          password:
-              _passwordController
-                  .text, // In un'app reale, dovresti hashare la password
-        );
-
-        // Salvo l'utente nel database
-        await DatabaseHelper.instance.createUser(newUser);
-
-        // Mostra conferma e pulisci il form
-        _showSuccessSnackBar('Registrazione completata con successo!');
-        _formKey.currentState!.reset();
-        _nomeController.clear();
-        _cognomeController.clear();
-        _usernameController.clear();
-        _passwordController.clear();
-        _confirmPasswordController.clear();
-      } catch (e) {
-        _showErrorSnackBar('Errore durante la registrazione: ${e.toString()}');
-      } finally {
+      });
+    } catch (e) {
+      _showErrorMessage('Errore durante la registrazione: $e');
+    } finally {
+      if (mounted) {
         setState(() {
           _isLoading = false;
         });
       }
     }
-  }
-
-  void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context as BuildContext).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context as BuildContext).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
   }
 
   @override
@@ -216,7 +284,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Logo o Titolo
                     Text(
                       "Crea Account",
                       style: GoogleFonts.poppins(
@@ -233,66 +300,48 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         color: Colors.grey[600],
                       ),
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 20),
 
-                    // Form di registrazione
+                    // Area messaggi
+                    _messageWidget,
+
                     Form(
                       key: _formKey,
                       child: Column(
                         children: [
-                          // Nome
                           TextFormField(
                             controller: _nomeController,
                             decoration: _buildInputDecoration(
                               "Nome",
                               Icons.person_outline,
                             ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Inserisci il tuo nome';
-                              }
-                              return null;
-                            },
+                            validator: (v) =>
+                                (v == null || v.isEmpty) ? 'Inserisci il tuo nome' : null,
                           ),
                           const SizedBox(height: 16),
-
-                          // Cognome
-                          // Cognome
                           TextFormField(
                             controller: _cognomeController,
                             decoration: _buildInputDecoration(
                               "Cognome",
                               Icons.person_outline,
                             ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Inserisci il tuo cognome';
-                              }
-                              return null;
-                            },
+                            validator: (v) =>
+                                (v == null || v.isEmpty) ? 'Inserisci il tuo cognome' : null,
                           ),
                           const SizedBox(height: 16),
-
-                          // Username
                           TextFormField(
                             controller: _usernameController,
                             decoration: _buildInputDecoration(
                               "Username",
                               Icons.alternate_email,
                             ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Inserisci un username';
-                              }
-                              if (value.length < 4) {
-                                return 'L\'username deve avere almeno 4 caratteri';
-                              }
+                            validator: (v) {
+                              if (v == null || v.isEmpty) return 'Inserisci un username';
+                              if (v.length < 4) return 'L\'username deve avere almeno 4 caratteri';
                               return null;
                             },
                           ),
                           const SizedBox(height: 16),
-
-                          // Password
                           TextFormField(
                             controller: _passwordController,
                             obscureText: !_isPasswordVisible,
@@ -307,26 +356,18 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                       : Icons.visibility_off,
                                   color: Colors.grey,
                                 ),
-                                onPressed: () {
-                                  setState(() {
-                                    _isPasswordVisible = !_isPasswordVisible;
-                                  });
-                                },
+                                onPressed: () => setState(() {
+                                  _isPasswordVisible = !_isPasswordVisible;
+                                }),
                               ),
                             ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Inserisci una password';
-                              }
-                              if (value.length < 6) {
-                                return 'La password deve avere almeno 6 caratteri';
-                              }
+                            validator: (v) {
+                              if (v == null || v.isEmpty) return 'Inserisci una password';
+                              if (v.length < 6) return 'La password deve avere almeno 6 caratteri';
                               return null;
                             },
                           ),
                           const SizedBox(height: 16),
-
-                          // Conferma Password
                           TextFormField(
                             controller: _confirmPasswordController,
                             obscureText: !_isConfirmPasswordVisible,
@@ -341,27 +382,18 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                       : Icons.visibility_off,
                                   color: Colors.grey,
                                 ),
-                                onPressed: () {
-                                  setState(() {
-                                    _isConfirmPasswordVisible =
-                                        !_isConfirmPasswordVisible;
-                                  });
-                                },
+                                onPressed: () => setState(() {
+                                  _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                                }),
                               ),
                             ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Conferma la tua password';
-                              }
-                              if (value != _passwordController.text) {
-                                return 'Le password non corrispondono';
-                              }
+                            validator: (v) {
+                              if (v == null || v.isEmpty) return 'Conferma la tua password';
+                              if (v != _passwordController.text) return 'Le password non corrispondono';
                               return null;
                             },
                           ),
                           const SizedBox(height: 30),
-
-                          // Pulsante di registrazione
                           SizedBox(
                             width: double.infinity,
                             height: 56,
@@ -369,44 +401,32 @@ class _RegistrationPageState extends State<RegistrationPage> {
                               onPressed: _isLoading ? null : _register,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF5E17EB),
-                                foregroundColor: Colors.white,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 elevation: 3,
                               ),
-                              child:
-                                  _isLoading
-                                      ? const CircularProgressIndicator(
-                                        color: Colors.white,
-                                      )
-                                      : Text(
-                                        'Registrati',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                              child: _isLoading
+                                  ? const CircularProgressIndicator(color: Colors.white)
+                                  : Text(
+                                      'Registrati',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
                                       ),
+                                    ),
                             ),
                           ),
-
                           const SizedBox(height: 24),
-
-                          // Link per accedere se si ha già un account
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
                                 'Hai già un account?',
-                                style: GoogleFonts.poppins(
-                                  color: Colors.grey[600],
-                                ),
+                                style: GoogleFonts.poppins(color: Colors.grey[600]),
                               ),
                               TextButton(
-                                onPressed: () {
-                                  // Naviga alla pagina di login
-                                  // Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
-                                },
+                                onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
                                 child: Text(
                                   'Accedi',
                                   style: GoogleFonts.poppins(
@@ -457,11 +477,3 @@ class _RegistrationPageState extends State<RegistrationPage> {
     );
   }
 }
-
-// Per utilizzare questa pagina, aggiungi al tuo main.dart:
-// void main() {
-//   runApp(MaterialApp(
-//     home: RegistrationPage(),
-//     debugShowCheckedModeBanner: false,
-//   ));
-// }

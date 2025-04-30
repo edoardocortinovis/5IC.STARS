@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// Importa le pagine necessarie
-import 'access_section/RegistrationPage.dart';
-import 'access_section/AccessPage.dart';
-import 'HomePage.dart';
+// Import necessary pages
+import 'access_section/registration_page.dart';
+import 'access_section/access_page.dart';
+import 'home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Controlla se l'utente è già loggato
+  // Check if user is already logged in
   final prefs = await SharedPreferences.getInstance();
   final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
 
@@ -20,7 +20,7 @@ void main() async {
 class MyApp extends StatelessWidget {
   final bool isLoggedIn;
 
-  const MyApp({Key? key, required this.isLoggedIn}) : super(key: key);
+  const MyApp({super.key, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
@@ -35,11 +35,11 @@ class MyApp extends StatelessWidget {
         ),
         fontFamily: GoogleFonts.montserrat().fontFamily,
       ),
-      // Definisci le rotte dell'app
+      // Define app routes
       initialRoute: isLoggedIn ? '/home' : '/register',
       routes: {
         '/register': (context) => const RegistrationPage(),
-        //'/login': (context) => const LoginPage(),
+        '/login': (context) => const AccessPage(),
         '/home': (context) => const HomePage(),
       },
     );
