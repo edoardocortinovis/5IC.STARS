@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 // Import necessary pages
 import 'access_section/registration_page.dart';
@@ -8,7 +9,13 @@ import 'access_section/access_page.dart';
 import 'home_page.dart';
 
 void main() async {
+  // Inizializza Flutter
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Inizializza sqflite_ffi per supporto desktop/web
+  sqfliteFfiInit();
+  // Imposta il factory per tutte le piattaforme
+  databaseFactory = databaseFactoryFfi;
 
   // Check if user is already logged in
   final prefs = await SharedPreferences.getInstance();
@@ -19,14 +26,18 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   final bool isLoggedIn;
+  // Utilizziamo una chiave unica per il Navigator
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
-  const MyApp({super.key, required this.isLoggedIn});
+  MyApp({super.key, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: '5IC Stars App',
       debugShowCheckedModeBanner: false,
+      // Assegniamo la chiave unica al navigatore
+      navigatorKey: _navigatorKey,
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(

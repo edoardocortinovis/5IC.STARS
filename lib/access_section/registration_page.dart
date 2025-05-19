@@ -1,9 +1,16 @@
-// lib/access_section/registration_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:path/path.dart' as p;
+import 'package:shared_preferences/shared_preferences.dart';
+
+// Inizializzazione del database per tutte le piattaforme
+void initDatabase() {
+  // Inizializza sqflite_ffi per desktop/web
+  sqfliteFfiInit();
+  // Imposta il factory per tutte le piattaforme
+  databaseFactory = databaseFactoryFfi;
+}
 
 // User Model
 class User {
@@ -59,12 +66,27 @@ class DatabaseHelper {
     final dbPath = await getDatabasesPath();
     final path = p.join(dbPath, filePath);
 
-    return await openDatabase(path, version: 1, onCreate: _createDB);
+    return await openDatabase(
+      path, 
+      version: 1, 
+      onCreate: _createDB,
+      onOpen: (db) async {
+        // Verifica se la tabella esiste già
+        var tables = await db.rawQuery(
+          "SELECT name FROM sqlite_master WHERE type='table' AND name='users'"
+        );
+        
+        // Se la tabella non esiste, creala
+        if (tables.isEmpty) {
+          await _createDB(db, 1);
+        }
+      }
+    );
   }
 
   Future _createDB(Database db, int version) async {
     await db.execute('''
-      CREATE TABLE users (
+      CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nome TEXT NOT NULL,
         cognome TEXT NOT NULL,
@@ -136,6 +158,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
   // Widget per messaggi di errore/successo
   Widget _messageWidget = const SizedBox.shrink();
+
+  @override
+  void initState() {
+    super.initState();
+    // Inizializza il database all'avvio della pagina
+    initDatabase();
+  }
 
   @override
   void dispose() {
@@ -229,6 +258,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
           .getUser(_usernameController.text.trim());
       if (existingUser != null) {
         _showErrorMessage('Username già in uso. Scegli un altro username.');
+        setState(() {
+          _isLoading = false;
+        });
         return;
       }
 
@@ -239,7 +271,15 @@ class _RegistrationPageState extends State<RegistrationPage> {
         username: _usernameController.text.trim(),
         password: _passwordController.text,
       );
+      
       await DatabaseHelper.instance.createUser(newUser);
+
+      // Salva lo stato di login nelle SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
+      await prefs.setString('username', newUser.username);
+      await prefs.setString('nome', newUser.nome);
+      await prefs.setString('cognome', newUser.cognome);
 
       _showSuccessMessage('Registrazione completata con successo!');
       _formKey.currentState!.reset();
@@ -251,7 +291,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
       Future.delayed(const Duration(milliseconds: 1500), () {
         if (mounted) {
-          Navigator.pushReplacementNamed(context, '/login');
+          Navigator.pushReplacementNamed(context, '/home');
         }
       });
     } catch (e) {
@@ -413,6 +453,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                       style: GoogleFonts.poppins(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
+                                        color: Colors.white,
                                       ),
                                     ),
                             ),

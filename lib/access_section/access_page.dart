@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'registration_page.dart';  // contiene DatabaseHelper e User
 
 class AccessPage extends StatefulWidget {
@@ -21,6 +22,14 @@ class _AccessPageState extends State<AccessPage> {
 
   // Widget per mostrare messaggi di errore/successo sopra il form
   Widget _messageWidget = const SizedBox.shrink();
+
+  @override
+  void initState() {
+    super.initState();
+    // Inizializza sqflite_ffi
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
 
   @override
   void dispose() {
@@ -95,9 +104,12 @@ class _AccessPageState extends State<AccessPage> {
       if (user != null) {
         _showSuccessMessage('Accesso effettuato con successo!');
 
+        // Salva i dati dell'utente nelle SharedPreferences
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('isLoggedIn', true);
         await prefs.setString('username', user.username);
+        await prefs.setString('nome', user.nome);
+        await prefs.setString('cognome', user.cognome);
 
         Future.delayed(const Duration(milliseconds: 1000), () {
           if (!mounted) return;
@@ -197,6 +209,7 @@ class _AccessPageState extends State<AccessPage> {
                                       style: GoogleFonts.poppins(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
+                                        color: Colors.white,
                                       ),
                                     ),
                             ),
