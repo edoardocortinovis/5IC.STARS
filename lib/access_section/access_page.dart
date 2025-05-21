@@ -1,10 +1,8 @@
-// lib/access_section/access_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'registration_page.dart';  // contiene DatabaseHelper e User
+// Rimuovi: import 'package:shared_preferences/shared_preferences.dart';
+// Rimuovi: import '../db/database_helper.dart';
+import '../services/auth_service.dart'; // Importa AuthService
 
 class AccessPage extends StatefulWidget {
   const AccessPage({super.key});
@@ -15,226 +13,159 @@ class AccessPage extends StatefulWidget {
 
 class _AccessPageState extends State<AccessPage> {
   final _formKey = GlobalKey<FormState>();
-  final _usernameController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _isPasswordVisible = false;
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
   bool _isLoading = false;
-
-  // Widget per mostrare messaggi di errore/successo sopra il form
-  Widget _messageWidget = const SizedBox.shrink();
-
-  @override
-  void initState() {
-    super.initState();
-    // Inizializza sqflite_ffi
-    sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
-  }
-
-  @override
-  void dispose() {
-    _usernameController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  void _showErrorMessage(String message) {
-    setState(() {
-      _messageWidget = Container(
-        padding: const EdgeInsets.all(10),
-        margin: const EdgeInsets.only(bottom: 20),
-        decoration: BoxDecoration(
-          color: Colors.red.shade100,
-          border: Border.all(color: Colors.red),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.error_outline, color: Colors.red),
-            const SizedBox(width: 10),
-            Expanded(child: Text(message, style: const TextStyle(color: Colors.red))),
-          ],
-        ),
-      );
-    });
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) setState(() => _messageWidget = const SizedBox.shrink());
-    });
-  }
-
-  void _showSuccessMessage(String message) {
-    setState(() {
-      _messageWidget = Container(
-        padding: const EdgeInsets.all(10),
-        margin: const EdgeInsets.only(bottom: 20),
-        decoration: BoxDecoration(
-          color: Colors.green.shade100,
-          border: Border.all(color: Colors.green),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.check_circle_outline, color: Colors.green),
-            const SizedBox(width: 10),
-            Expanded(child: Text(message, style: const TextStyle(color: Colors.green))),
-          ],
-        ),
-      );
-    });
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) setState(() => _messageWidget = const SizedBox.shrink());
-    });
-  }
+  final AuthService _authService = AuthService(); // Usa AuthService
 
   Future<void> _login() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
 
-    setState(() {
-      _isLoading = true;
-      _messageWidget = const SizedBox.shrink();
-    });
-
-    try {
-      // chiama il metodo definito in registration_page.dart
-      final User? user = await DatabaseHelper.instance.authenticateUser(
-        _usernameController.text.trim(),
-        _passwordController.text,
+      final result = await _authService.loginUser(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
       );
 
-      if (user != null) {
-        _showSuccessMessage('Accesso effettuato con successo!');
-
-        // Salva i dati dell'utente nelle SharedPreferences
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('isLoggedIn', true);
-        await prefs.setString('username', user.username);
-        await prefs.setString('nome', user.nome);
-        await prefs.setString('cognome', user.cognome);
-
-        Future.delayed(const Duration(milliseconds: 1000), () {
-          if (!mounted) return;
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(result['message'])));
+        if (result['success']) {
           Navigator.pushReplacementNamed(context, '/home');
-        });
-      } else {
-        _showErrorMessage('Username o password non validi');
+        }
       }
-    } catch (e) {
-      _showErrorMessage('Errore durante l\'accesso: $e');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
+  // ... il resto del widget build e _buildTextFormField rimane invariato ...
+  // Assicurati che il widget build e il metodo _buildTextFormField siano presenti
+  // come nella versione precedente della pagina di accesso.
+  // Li ometto qui per brevità, ma sono necessari.
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFFF5F7FA), Color(0xFFE4EDF5)],
+            colors: [
+              theme.colorScheme.primary.withOpacity(0.8),
+              theme.colorScheme.secondary.withOpacity(0.8),
+            ],
           ),
         ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Card(
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Accedi',
-                      style: GoogleFonts.poppins(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF5E17EB),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Text(
+                        'Bentornato!',
+                        style: GoogleFonts.poppins(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Inserisci le tue credenziali per accedere',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: Colors.grey[600],
+                      const SizedBox(height: 8),
+                      Text(
+                        'Accedi al tuo account',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          color: theme.colorScheme.onSurface.withOpacity(0.7),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // qui compare l'eventuale messaggio
-                    _messageWidget,
-
-                    Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          TextFormField(
-                            controller: _usernameController,
-                            decoration: _buildInputDecoration('Username', Icons.alternate_email),
-                            validator: (v) => (v == null || v.isEmpty) ? 'Inserisci il tuo username' : null,
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _passwordController,
-                            obscureText: !_isPasswordVisible,
-                            decoration: _buildInputDecoration('Password', Icons.lock_outline).copyWith(
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                                  color: Colors.grey,
-                                ),
-                                onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+                      const SizedBox(height: 24),
+                      _buildTextFormField(
+                        controller: _emailController,
+                        labelText: 'Email',
+                        icon: Icons.email_outlined,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Inserisci la tua email';
+                          }
+                          if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                            return 'Inserisci un\'email valida';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      _buildTextFormField(
+                        controller: _passwordController,
+                        labelText: 'Password',
+                        icon: Icons.lock_outline,
+                        obscureText: true,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Inserisci la password';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 30),
+                      _isLoading
+                          ? CircularProgressIndicator(
+                            color: theme.colorScheme.primary,
+                          )
+                          : ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: theme.colorScheme.primary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 50,
+                                vertical: 15,
                               ),
+                              textStyle: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              elevation: 5,
                             ),
-                            validator: (v) => (v == null || v.isEmpty) ? 'Inserisci la tua password' : null,
+                            onPressed: _login,
+                            child: const Text('ACCEDI'),
                           ),
-                          const SizedBox(height: 30),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 56,
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _login,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF5E17EB),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                elevation: 3,
-                              ),
-                              child: _isLoading
-                                  ? const CircularProgressIndicator(color: Colors.white)
-                                  : Text(
-                                      'Accedi',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                            ),
+                      const SizedBox(height: 20),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pushReplacementNamed(context, '/register');
+                        },
+                        child: Text(
+                          'Non hai un account? Registrati',
+                          style: GoogleFonts.poppins(
+                            color: theme.colorScheme.secondary,
                           ),
-                          const SizedBox(height: 24),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text('Non hai un account?', style: GoogleFonts.poppins(color: Colors.grey[600])),
-                              TextButton(
-                                onPressed: () => Navigator.pushReplacementNamed(context, '/register'),
-                                child: Text(
-                                  'Registrati',
-                                  style: GoogleFonts.poppins(
-                                    color: const Color(0xFF5E17EB),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -244,30 +175,53 @@ class _AccessPageState extends State<AccessPage> {
     );
   }
 
-  InputDecoration _buildInputDecoration(String label, IconData icon) {
-    return InputDecoration(
-      labelText: label,
-      prefixIcon: Icon(icon, color: Colors.grey),
-      labelStyle: GoogleFonts.poppins(color: Colors.grey),
-      filled: true,
-      fillColor: Colors.white,
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: Colors.grey.shade300),
+  Widget _buildTextFormField({
+    required TextEditingController controller,
+    required String labelText,
+    required IconData icon,
+    bool obscureText = false,
+    TextInputType keyboardType = TextInputType.text,
+    required String? Function(String?) validator,
+  }) {
+    final theme = Theme.of(context);
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: labelText,
+        labelStyle: GoogleFonts.poppins(
+          color: theme.colorScheme.onSurface.withOpacity(0.7),
+        ),
+        prefixIcon: Icon(icon, color: theme.colorScheme.primary),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: theme.colorScheme.outline.withOpacity(0.5),
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: theme.colorScheme.outline.withOpacity(0.5),
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+        ),
+        filled: true,
+        fillColor: theme.colorScheme.surfaceVariant.withOpacity(0.5),
       ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Color(0xFF5E17EB), width: 2),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Colors.red, width: 2),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Colors.red, width: 2),
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      validator: validator,
+      style: GoogleFonts.poppins(color: theme.colorScheme.onSurface),
     );
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 }

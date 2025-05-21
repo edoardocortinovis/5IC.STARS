@@ -1,142 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:path/path.dart' as p;
-import 'package:shared_preferences/shared_preferences.dart';
 
-// Inizializzazione del database per tutte le piattaforme
-void initDatabase() {
-  // Inizializza sqflite_ffi per desktop/web
-  sqfliteFfiInit();
-  // Imposta il factory per tutte le piattaforme
-  databaseFactory = databaseFactoryFfi;
-}
+import '../services/auth_service.dart'; // Importa AuthService
 
-// User Model
-class User {
-  final int? id;
-  final String nome;
-  final String cognome;
-  final String username;
-  final String password;
-
-  User({
-    this.id,
-    required this.nome,
-    required this.cognome,
-    required this.username,
-    required this.password,
-  });
-
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'nome': nome,
-      'cognome': cognome,
-      'username': username,
-      'password': password,
-    };
-  }
-
-  factory User.fromMap(Map<String, dynamic> map) {
-    return User(
-      id: map['id'],
-      nome: map['nome'],
-      cognome: map['cognome'],
-      username: map['username'],
-      password: map['password'],
-    );
-  }
-}
-
-// Database Helper
-class DatabaseHelper {
-  static final DatabaseHelper instance = DatabaseHelper._init();
-  static Database? _database;
-
-  DatabaseHelper._init();
-
-  Future<Database> get database async {
-    if (_database != null) return _database!;
-    _database = await _initDB('users.db');
-    return _database!;
-  }
-
-  Future<Database> _initDB(String filePath) async {
-    final dbPath = await getDatabasesPath();
-    final path = p.join(dbPath, filePath);
-
-    return await openDatabase(
-      path, 
-      version: 1, 
-      onCreate: _createDB,
-      onOpen: (db) async {
-        // Verifica se la tabella esiste già
-        var tables = await db.rawQuery(
-          "SELECT name FROM sqlite_master WHERE type='table' AND name='users'"
-        );
-        
-        // Se la tabella non esiste, creala
-        if (tables.isEmpty) {
-          await _createDB(db, 1);
-        }
-      }
-    );
-  }
-
-  Future _createDB(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nome TEXT NOT NULL,
-        cognome TEXT NOT NULL,
-        username TEXT NOT NULL UNIQUE,
-        password TEXT NOT NULL
-      )
-    ''');
-  }
-
-  Future<int> createUser(User user) async {
-    final db = await instance.database;
-    return await db.insert('users', user.toMap());
-  }
-
-  Future<User?> getUser(String username) async {
-    final db = await instance.database;
-    final maps = await db.query(
-      'users',
-      where: 'username = ?',
-      whereArgs: [username],
-    );
-
-    if (maps.isNotEmpty) {
-      return User.fromMap(maps.first);
-    } else {
-      return null;
-    }
-  }
-
-  Future<List<User>> getAllUsers() async {
-    final db = await instance.database;
-    final result = await db.query('users');
-    return result.map((map) => User.fromMap(map)).toList();
-  }
-
-  Future<User?> authenticateUser(String username, String password) async {
-    final db = await instance.database;
-    final maps = await db.query(
-      'users',
-      where: 'username = ? AND password = ?',
-      whereArgs: [username, password],
-    );
-    if (maps.isNotEmpty) {
-      return User.fromMap(maps.first);
-    }
-    return null;
-  }
-}
-
-// Registration Page
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({super.key});
 
@@ -146,157 +12,36 @@ class RegistrationPage extends StatefulWidget {
 
 class _RegistrationPageState extends State<RegistrationPage> {
   final _formKey = GlobalKey<FormState>();
-  final _nomeController = TextEditingController();
-  final _cognomeController = TextEditingController();
-  final _usernameController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
-  bool _isPasswordVisible = false;
-  bool _isConfirmPasswordVisible = false;
   bool _isLoading = false;
-
-  // Widget per messaggi di errore/successo
-  Widget _messageWidget = const SizedBox.shrink();
-
-  @override
-  void initState() {
-    super.initState();
-    // Inizializza il database all'avvio della pagina
-    initDatabase();
-  }
-
-  @override
-  void dispose() {
-    _nomeController.dispose();
-    _cognomeController.dispose();
-    _usernameController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
-    super.dispose();
-  }
-
-  void _showErrorMessage(String message) {
-    setState(() {
-      _messageWidget = Container(
-        padding: const EdgeInsets.all(10),
-        margin: const EdgeInsets.only(bottom: 20),
-        decoration: BoxDecoration(
-          color: Colors.red.shade100,
-          border: Border.all(color: Colors.red),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.error_outline, color: Colors.red),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                message,
-                style: const TextStyle(color: Colors.red),
-              ),
-            ),
-          ],
-        ),
-      );
-    });
-
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        setState(() {
-          _messageWidget = const SizedBox.shrink();
-        });
-      }
-    });
-  }
-
-  void _showSuccessMessage(String message) {
-    setState(() {
-      _messageWidget = Container(
-        padding: const EdgeInsets.all(10),
-        margin: const EdgeInsets.only(bottom: 20),
-        decoration: BoxDecoration(
-          color: Colors.green.shade100,
-          border: Border.all(color: Colors.green),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.check_circle_outline, color: Colors.green),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                message,
-                style: const TextStyle(color: Colors.green),
-              ),
-            ),
-          ],
-        ),
-      );
-    });
-
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        setState(() {
-          _messageWidget = const SizedBox.shrink();
-        });
-      }
-    });
-  }
+  final AuthService _authService = AuthService(); // Usa AuthService
 
   Future<void> _register() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
 
-    setState(() {
-      _isLoading = true;
-      _messageWidget = const SizedBox.shrink();
-    });
-
-    try {
-      // Verifica username esistente
-      final existingUser = await DatabaseHelper.instance
-          .getUser(_usernameController.text.trim());
-      if (existingUser != null) {
-        _showErrorMessage('Username già in uso. Scegli un altro username.');
-        setState(() {
-          _isLoading = false;
-        });
-        return;
-      }
-
-      // Crea utente e salva nel DB
-      final newUser = User(
-        nome: _nomeController.text.trim(),
-        cognome: _cognomeController.text.trim(),
+      final result = await _authService.registerUser(
         username: _usernameController.text.trim(),
-        password: _passwordController.text,
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
       );
-      
-      await DatabaseHelper.instance.createUser(newUser);
 
-      // Salva lo stato di login nelle SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isLoggedIn', true);
-      await prefs.setString('username', newUser.username);
-      await prefs.setString('nome', newUser.nome);
-      await prefs.setString('cognome', newUser.cognome);
-
-      _showSuccessMessage('Registrazione completata con successo!');
-      _formKey.currentState!.reset();
-      _nomeController.clear();
-      _cognomeController.clear();
-      _usernameController.clear();
-      _passwordController.clear();
-      _confirmPasswordController.clear();
-
-      Future.delayed(const Duration(milliseconds: 1500), () {
-        if (mounted) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(result['message'])));
+        if (result['success']) {
           Navigator.pushReplacementNamed(context, '/home');
         }
-      });
-    } catch (e) {
-      _showErrorMessage('Errore durante la registrazione: $e');
-    } finally {
+      }
+
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -305,183 +50,152 @@ class _RegistrationPageState extends State<RegistrationPage> {
     }
   }
 
+  // ... il resto del widget build e _buildTextFormField rimane invariato ...
+  // Assicurati che il widget build e il metodo _buildTextFormField siano presenti
+  // come nella versione precedente della pagina di registrazione.
+  // Li ometto qui per brevità, ma sono necessari.
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFFF5F7FA), Color(0xFFE4EDF5)],
+            colors: [
+              theme.colorScheme.primary.withOpacity(0.8),
+              theme.colorScheme.secondary.withOpacity(0.8),
+            ],
           ),
         ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Card(
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Crea Account",
-                      style: GoogleFonts.poppins(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF5E17EB),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Text(
+                        'Crea Account',
+                        style: GoogleFonts.poppins(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "Inserisci i tuoi dati per registrarti",
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: Colors.grey[600],
+                      const SizedBox(height: 24),
+                      _buildTextFormField(
+                        controller: _usernameController,
+                        labelText: 'Username',
+                        icon: Icons.person_outline,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Inserisci un username';
+                          }
+                          if (value.length < 3) {
+                            return 'L\'username deve contenere almeno 3 caratteri';
+                          }
+                          return null;
+                        },
                       ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Area messaggi
-                    _messageWidget,
-
-                    Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          TextFormField(
-                            controller: _nomeController,
-                            decoration: _buildInputDecoration(
-                              "Nome",
-                              Icons.person_outline,
-                            ),
-                            validator: (v) =>
-                                (v == null || v.isEmpty) ? 'Inserisci il tuo nome' : null,
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _cognomeController,
-                            decoration: _buildInputDecoration(
-                              "Cognome",
-                              Icons.person_outline,
-                            ),
-                            validator: (v) =>
-                                (v == null || v.isEmpty) ? 'Inserisci il tuo cognome' : null,
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _usernameController,
-                            decoration: _buildInputDecoration(
-                              "Username",
-                              Icons.alternate_email,
-                            ),
-                            validator: (v) {
-                              if (v == null || v.isEmpty) return 'Inserisci un username';
-                              if (v.length < 4) return 'L\'username deve avere almeno 4 caratteri';
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _passwordController,
-                            obscureText: !_isPasswordVisible,
-                            decoration: _buildInputDecoration(
-                              "Password",
-                              Icons.lock_outline,
-                            ).copyWith(
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _isPasswordVisible
-                                      ? Icons.visibility
-                                      : Icons.visibility_off,
-                                  color: Colors.grey,
-                                ),
-                                onPressed: () => setState(() {
-                                  _isPasswordVisible = !_isPasswordVisible;
-                                }),
-                              ),
-                            ),
-                            validator: (v) {
-                              if (v == null || v.isEmpty) return 'Inserisci una password';
-                              if (v.length < 6) return 'La password deve avere almeno 6 caratteri';
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _confirmPasswordController,
-                            obscureText: !_isConfirmPasswordVisible,
-                            decoration: _buildInputDecoration(
-                              "Conferma Password",
-                              Icons.lock_outline,
-                            ).copyWith(
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _isConfirmPasswordVisible
-                                      ? Icons.visibility
-                                      : Icons.visibility_off,
-                                  color: Colors.grey,
-                                ),
-                                onPressed: () => setState(() {
-                                  _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
-                                }),
-                              ),
-                            ),
-                            validator: (v) {
-                              if (v == null || v.isEmpty) return 'Conferma la tua password';
-                              if (v != _passwordController.text) return 'Le password non corrispondono';
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 30),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 56,
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _register,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF5E17EB),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                elevation: 3,
-                              ),
-                              child: _isLoading
-                                  ? const CircularProgressIndicator(color: Colors.white)
-                                  : Text(
-                                      'Registrati',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Hai già un account?',
-                                style: GoogleFonts.poppins(color: Colors.grey[600]),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
-                                child: Text(
-                                  'Accedi',
-                                  style: GoogleFonts.poppins(
-                                    color: const Color(0xFF5E17EB),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                      const SizedBox(height: 16),
+                      _buildTextFormField(
+                        controller: _emailController,
+                        labelText: 'Email',
+                        icon: Icons.email_outlined,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Inserisci la tua email';
+                          }
+                          if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                            return 'Inserisci un\'email valida';
+                          }
+                          return null;
+                        },
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+                      _buildTextFormField(
+                        controller: _passwordController,
+                        labelText: 'Password',
+                        icon: Icons.lock_outline,
+                        obscureText: true,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Inserisci una password';
+                          }
+                          if (value.length < 6) {
+                            return 'La password deve contenere almeno 6 caratteri';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      _buildTextFormField(
+                        controller: _confirmPasswordController,
+                        labelText: 'Conferma Password',
+                        icon: Icons.lock_reset_outlined,
+                        obscureText: true,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Conferma la password';
+                          }
+                          if (value != _passwordController.text) {
+                            return 'Le password non coincidono';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 30),
+                      _isLoading
+                          ? CircularProgressIndicator(
+                            color: theme.colorScheme.primary,
+                          )
+                          : ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: theme.colorScheme.primary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 50,
+                                vertical: 15,
+                              ),
+                              textStyle: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              elevation: 5,
+                            ),
+                            onPressed: _register,
+                            child: const Text('REGISTRATI'),
+                          ),
+                      const SizedBox(height: 20),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pushReplacementNamed(context, '/login');
+                        },
+                        child: Text(
+                          'Hai già un account? Accedi',
+                          style: GoogleFonts.poppins(
+                            color: theme.colorScheme.secondary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -491,30 +205,55 @@ class _RegistrationPageState extends State<RegistrationPage> {
     );
   }
 
-  InputDecoration _buildInputDecoration(String label, IconData icon) {
-    return InputDecoration(
-      labelText: label,
-      prefixIcon: Icon(icon, color: Colors.grey),
-      labelStyle: GoogleFonts.poppins(color: Colors.grey),
-      filled: true,
-      fillColor: Colors.white,
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: Colors.grey.shade300),
+  Widget _buildTextFormField({
+    required TextEditingController controller,
+    required String labelText,
+    required IconData icon,
+    bool obscureText = false,
+    TextInputType keyboardType = TextInputType.text,
+    required String? Function(String?) validator,
+  }) {
+    final theme = Theme.of(context);
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: labelText,
+        labelStyle: GoogleFonts.poppins(
+          color: theme.colorScheme.onSurface.withOpacity(0.7),
+        ),
+        prefixIcon: Icon(icon, color: theme.colorScheme.primary),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: theme.colorScheme.outline.withOpacity(0.5),
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: theme.colorScheme.outline.withOpacity(0.5),
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+        ),
+        filled: true,
+        fillColor: theme.colorScheme.surfaceVariant.withOpacity(0.5),
       ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Color(0xFF5E17EB), width: 2),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Colors.red, width: 2),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Colors.red, width: 2),
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      validator: validator,
+      style: GoogleFonts.poppins(color: theme.colorScheme.onSurface),
     );
+  }
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
   }
 }

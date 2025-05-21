@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// Rimuovi: import 'package:shared_preferences/shared_preferences.dart';
+import '../services/auth_service.dart'; // Importa AuthService
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -11,7 +12,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String username = '';
+  String username = 'Utente'; // Valore di default
+  final AuthService _authService = AuthService(); // Usa AuthService
 
   @override
   void initState() {
@@ -19,34 +21,42 @@ class _HomePageState extends State<HomePage> {
     _loadUserData();
   }
 
-  // Load user data from SharedPreferences
   Future<void> _loadUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      username = prefs.getString('username') ?? 'Utente';
-    });
+    // Recupera l'username dal servizio di autenticazione (che usa SharedPreferences)
+    final currentUsername = await _authService.getCurrentUsername();
+    if (currentUsername != null && mounted) {
+      setState(() {
+        username = currentUsername;
+      });
+    }
   }
 
-  // Logout function
   Future<void> _logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isLoggedIn', false);
-    await prefs.remove('username');
-
-    // Navigate to login page using named route
-    if (!mounted) return;
-    Navigator.pushReplacementNamed(context, '/login');
+    await _authService.logoutUser(); // Usa il metodo di logout del servizio
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/login');
+    }
   }
 
+  // ... il resto del widget build, _buildFeatureCard, e _buildSquareCard rimane invariato ...
+  // Assicurati che il widget build e i metodi _buildFeatureCard, _buildSquareCard siano presenti
+  // come nella versione precedente della home page.
+  // Li ometto qui per brevità, ma sono necessari.
   @override
   Widget build(BuildContext context) {
+    // Use the proper Material Design context from parent
+    final theme = Theme.of(context);
+
     return Scaffold(
+      // Add key background color for fallback
+      backgroundColor: theme.colorScheme.surface,
       body: Container(
+        // Use a more contrasting gradient for better visibility
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFFF5F7FA), Color(0xFFE4EDF5)],
+            colors: [Color(0xFFDCE4F0), Color(0xFFB8C7DB)], // Darker gradient
           ),
         ),
         child: SafeArea(
@@ -101,7 +111,9 @@ class _HomePageState extends State<HomePage> {
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
+                              color: Colors.black.withOpacity(
+                                0.2,
+                              ), // Increased opacity
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -159,6 +171,9 @@ class _HomePageState extends State<HomePage> {
                         ),
                         onTap: () {
                           // Navigate to game 1
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Coming soon!')),
+                          );
                         },
                       ),
 
@@ -175,6 +190,9 @@ class _HomePageState extends State<HomePage> {
                         ),
                         onTap: () {
                           // Navigate to game 2
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Coming soon!')),
+                          );
                         },
                       ),
 
@@ -192,6 +210,9 @@ class _HomePageState extends State<HomePage> {
                         height: 180,
                         onTap: () {
                           // Navigate to memories section
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Coming soon!')),
+                          );
                         },
                       ),
 
@@ -211,6 +232,9 @@ class _HomePageState extends State<HomePage> {
                               ),
                               onTap: () {
                                 // Navigate to ranking
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Coming soon!')),
+                                );
                               },
                             ),
                           ),
@@ -226,6 +250,9 @@ class _HomePageState extends State<HomePage> {
                               ),
                               onTap: () {
                                 // Navigate to interviews
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Coming soon!')),
+                                );
                               },
                             ),
                           ),
@@ -260,7 +287,7 @@ class _HomePageState extends State<HomePage> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withOpacity(0.2), // Increased shadow opacity
               blurRadius: 15,
               offset: const Offset(0, 5),
             ),
@@ -322,7 +349,9 @@ class _HomePageState extends State<HomePage> {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withOpacity(
+                  0.2,
+                ), // Increased shadow opacity
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
