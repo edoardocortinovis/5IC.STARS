@@ -4,7 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 // Rimuovi: import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_service.dart'; // Importa AuthService
 import '/news_page.dart';
-import '/game_screen.dart'; // Sostituisci con il percorso corretto
+import '/game_screen.dart';
+import 'word_puzzle_game.dart'; // Sostituisci con il percorso corretto
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -173,8 +174,12 @@ class _HomePageState extends State<HomePage> {
                         ),
                         onTap: () {
                           // Navigate to game 1
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Coming soon!')),
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => const WordPuzzleGameScreen(),
+                            ),
                           );
                         },
                       ),

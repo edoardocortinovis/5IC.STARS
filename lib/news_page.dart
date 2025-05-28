@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:google_fonts/google_fonts.dart';
 
-// La classe NewsPage è una semplice classe che restituisce la HomePage
+// La classe NewsPage ora include un bottone per tornare alla home
 class NewsPage extends StatelessWidget {
   const NewsPage({super.key});
 
@@ -15,13 +15,39 @@ class NewsPage extends StatelessWidget {
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-        systemNavigationBarColor:
-            Colors.white, // Or Colors.grey.shade50 if preferred
+        statusBarIconBrightness: Brightness.dark,
+        systemNavigationBarColor: Color(0xFFDCE4F0),
         systemNavigationBarIconBrightness: Brightness.dark,
       ),
     );
-    return HomePage();
+
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: CircleAvatar(
+            backgroundColor: const Color(0xFF5E17EB).withOpacity(0.1),
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Color(0xFF5E17EB)),
+              onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
+            ),
+          ),
+        ),
+        title: Text(
+          'Il nostro percorso',
+          style: GoogleFonts.poppins(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF5E17EB),
+            letterSpacing: 0.5,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: const HomePage(),
+    );
   }
 }
 
@@ -32,31 +58,23 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-// Removed TickerProviderStateMixin as TabController is no longer used
 class _HomePageState extends State<HomePage> {
-  // Removed _currentIndex and _tabController as there's only one page now
-  // Removed _pages list as we directly use YearsListPage in the body
-
   @override
   void initState() {
     super.initState();
-    // Removed TabController initialization
   }
 
   @override
   void dispose() {
-    // Removed TabController disposal
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
       // Body now directly shows the single page
       body: const YearsListPage(),
-
-      // REMOVED the entire bottomNavigationBar section
-      // as it requires at least 2 items and we only have one page.
     );
   }
 }
@@ -66,108 +84,37 @@ class YearsListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Set navigation bar color to match the background for consistency
-    SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle(
-        systemNavigationBarColor: Colors.grey.shade50,
-        systemNavigationBarIconBrightness: Brightness.dark,
+    return Container(
+      // Use the gradient background similar to the example code
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFDCE4F0), Color(0xFFB8C7DB)], // Gradient background
+        ),
       ),
-    );
-    return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      body: CustomScrollView(
+      child: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          SliverAppBar(
-            expandedHeight: 220.0,
-            floating: false,
-            pinned: true,
-            stretch: true,
-            backgroundColor: Color(0xFF3949AB),
-            flexibleSpace: FlexibleSpaceBar(
-              titlePadding: const EdgeInsets.only(
-                left: 20,
-                bottom: 16,
-                right: 20,
-              ),
-              title: Text(
-                'Il nostro percorso',
-                style: GoogleFonts.montserrat(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  ShaderMask(
-                    shaderCallback: (rect) {
-                      return LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Colors.black, Colors.transparent],
-                      ).createShader(
-                        Rect.fromLTRB(0, 0, rect.width, rect.height),
-                      );
-                    },
-                    blendMode: BlendMode.dstIn,
-                    child: Image.network(
-                      'https://picsum.photos/id/180/1000/600',
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          // ignore: deprecated_member_use
-                          Color(0xFF3949AB).withOpacity(0.8),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.search, color: Colors.white),
-                onPressed: () {
-                  // Implementazione ricerca
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.filter_list, color: Colors.white),
-                onPressed: () {
-                  // Implementazione filtro
-                },
-              ),
-            ],
-          ),
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 10),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
             sliver: SliverToBoxAdapter(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Anni Scolastici',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 26,
+                    style: GoogleFonts.poppins(
+                      fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF3949AB),
+                      color: const Color(0xFF5E17EB),
                       letterSpacing: -0.5,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Esplora i ricordi e gli eventi dei nostri 5 anni al Paleocapa',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 15,
                       color: Colors.grey.shade700,
                       height: 1.4,
@@ -184,7 +131,6 @@ class YearsListPage extends StatelessWidget {
                 BuildContext context,
                 int index,
               ) {
-                // Ensure schoolYears is accessible here or passed in
                 if (index < schoolYears.length) {
                   return Hero(
                     tag: 'year_card_$index',
@@ -214,7 +160,7 @@ class YearsListPage extends StatelessWidget {
                     ),
                   );
                 }
-                return null; // Should not happen if childCount is correct
+                return null;
               }, childCount: schoolYears.length),
             ),
           ),
@@ -241,10 +187,17 @@ class SchoolYearCard extends StatelessWidget {
           height: 180,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(
+              colors: [
+                _getGradientStartColor(year.yearNumber),
+                _getGradientEndColor(year.yearNumber),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             boxShadow: [
               BoxShadow(
-                // ignore: deprecated_member_use
-                color: _getYearColor(year.yearNumber).withOpacity(0.2),
+                color: _getYearColor(year.yearNumber).withOpacity(0.3),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
                 spreadRadius: 0.5,
@@ -253,47 +206,17 @@ class SchoolYearCard extends StatelessWidget {
           ),
           child: Stack(
             children: [
-              // Background image with mask
-              ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: ShaderMask(
-                  shaderCallback: (rect) {
-                    return LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: [
-                        // ignore: deprecated_member_use
-                        _getYearColor(year.yearNumber).withOpacity(0.9),
-                        // ignore: deprecated_member_use
-                        _getYearColor(year.yearNumber).withOpacity(0.6),
-                      ],
-                    ).createShader(
-                      Rect.fromLTRB(0, 0, rect.width, rect.height),
-                    );
-                  },
-                  blendMode: BlendMode.srcATop,
-                  child: Image.network(
-                    year.coverImageUrl,
-                    height: 180,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder:
-                        (context, error, stackTrace) => Container(
-                          color: _getYearColor(
-                            year.yearNumber,
-                            // ignore: deprecated_member_use
-                          ).withOpacity(0.3),
-                          child: Center(
-                            child: Icon(
-                              Icons.image_not_supported,
-                              color: Colors.white70,
-                              size: 40,
-                            ),
-                          ),
-                        ),
-                  ),
+              // Decorative pattern/icon in background
+              Positioned(
+                right: -30,
+                bottom: -30,
+                child: Icon(
+                  _getYearIcon(year.yearNumber),
+                  size: 150,
+                  color: Colors.white.withOpacity(0.15),
                 ),
               ),
+
               // Content overlay
               Padding(
                 padding: const EdgeInsets.all(20.0),
@@ -310,18 +233,16 @@ class SchoolYearCard extends StatelessWidget {
                             vertical: 7,
                           ),
                           decoration: BoxDecoration(
-                            // ignore: deprecated_member_use
                             color: Colors.white.withOpacity(0.25),
                             borderRadius: BorderRadius.circular(30),
                             border: Border.all(
-                              // ignore: deprecated_member_use
                               color: Colors.white.withOpacity(0.4),
                               width: 1,
                             ),
                           ),
                           child: Text(
                             year.academicYear,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
@@ -332,7 +253,7 @@ class SchoolYearCard extends StatelessWidget {
                         const SizedBox(height: 14),
                         Text(
                           year.title,
-                          style: GoogleFonts.montserrat(
+                          style: GoogleFonts.poppins(
                             fontSize: 26,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -340,9 +261,8 @@ class SchoolYearCard extends StatelessWidget {
                             shadows: [
                               Shadow(
                                 blurRadius: 3.0,
-                                // ignore: deprecated_member_use
                                 color: Colors.black.withOpacity(0.3),
-                                offset: Offset(1.0, 1.0),
+                                offset: const Offset(1.0, 1.0),
                               ),
                             ],
                           ),
@@ -357,7 +277,6 @@ class SchoolYearCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             FutureBuilder<int>(
-                              // Ensure EventStorage is accessible or use the direct method
                               future: EventStorage.getTotalEventCount(
                                 year.yearNumber,
                                 year.events.length,
@@ -368,7 +287,7 @@ class SchoolYearCard extends StatelessWidget {
 
                                 return Text(
                                   '$totalCount eventi',
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.poppins(
                                     fontSize: 16,
                                     color: Colors.white,
                                     fontWeight: FontWeight.w600,
@@ -380,9 +299,8 @@ class SchoolYearCard extends StatelessWidget {
                             const SizedBox(height: 5),
                             Text(
                               year.shortDescription,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 fontSize: 13,
-                                // ignore: deprecated_member_use
                                 color: Colors.white.withOpacity(0.85),
                                 fontWeight: FontWeight.w400,
                               ),
@@ -397,10 +315,9 @@ class SchoolYearCard extends StatelessWidget {
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                // ignore: deprecated_member_use
                                 color: Colors.black.withOpacity(0.1),
                                 blurRadius: 8,
-                                offset: Offset(0, 2),
+                                offset: const Offset(0, 2),
                               ),
                             ],
                           ),
@@ -422,25 +339,80 @@ class SchoolYearCard extends StatelessWidget {
     );
   }
 
-  // Removed _getTotalEventCount as it's now in EventStorage or handled directly
-  // Future<int> _getTotalEventCount(int yearNumber) async { ... }
+  // Helper method to get an icon based on the year number
+  IconData _getYearIcon(int yearNumber) {
+    switch (yearNumber) {
+      case 1:
+        return FontAwesomeIcons.school;
+      case 2:
+        return FontAwesomeIcons.bookOpen;
+      case 3:
+        return FontAwesomeIcons.graduationCap;
+      case 4:
+        return FontAwesomeIcons.laptop;
+      case 5:
+        return FontAwesomeIcons.trophy;
+      case 6:
+        return FontAwesomeIcons.rocket;
+      default:
+        return FontAwesomeIcons.calendarAlt;
+    }
+  }
 
   Color _getYearColor(int yearNumber) {
     switch (yearNumber) {
       case 1:
-        return Color(0xFF3949AB); // Indigo
+        return const Color(0xFF4776E6); // Blue
       case 2:
-        return Color(0xFF00897B); // Teal
+        return const Color(0xFF00897B); // Teal
       case 3:
-        return Color(0xFF303F9F); // Indigo
+        return const Color(0xFF8E54E9); // Purple
       case 4:
-        return Color(0xFFF57C00); // Orange
+        return const Color(0xFFFF416C); // Pink
       case 5:
-        return Color(0xFF7B1FA2); // Purple
-      case 6: // Periodo dopo la scuola
-        return Color(0xFFD32F2F); // Red
+        return const Color(0xFF56AB2F); // Green
+      case 6:
+        return const Color(0xFFFF9966); // Orange
       default:
-        return Color(0xFF3949AB);
+        return const Color(0xFF4776E6);
+    }
+  }
+
+  Color _getGradientStartColor(int yearNumber) {
+    switch (yearNumber) {
+      case 1:
+        return const Color(0xFF4776E6); // Blue
+      case 2:
+        return const Color(0xFF00897B); // Teal
+      case 3:
+        return const Color(0xFF8E54E9); // Purple
+      case 4:
+        return const Color(0xFFFF416C); // Pink
+      case 5:
+        return const Color(0xFF56AB2F); // Green
+      case 6:
+        return const Color(0xFFFF9966); // Orange
+      default:
+        return const Color(0xFF4776E6);
+    }
+  }
+
+  Color _getGradientEndColor(int yearNumber) {
+    switch (yearNumber) {
+      case 1:
+        return const Color(0xFF8E54E9); // Purple
+      case 2:
+        return const Color(0xFF26A69A); // Lighter Teal
+      case 3:
+        return const Color(0xFF4776E6); // Blue
+      case 4:
+        return const Color(0xFFFF4B2B); // Orange-Red
+      case 5:
+        return const Color(0xFFA8E063); // Light Green
+      case 6:
+        return const Color(0xFFFF5E62); // Red
+      default:
+        return const Color(0xFF8E54E9);
     }
   }
 }
@@ -504,11 +476,11 @@ class _YearEventsPageState extends State<YearEventsPage> {
     _saveCustomEvents();
 
     // Scorri verso il basso per mostrare il nuovo evento
-    Future.delayed(Duration(milliseconds: 300), () {
+    Future.delayed(const Duration(milliseconds: 300), () {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent + 100, // Add some offset
-          duration: Duration(milliseconds: 500),
+          duration: const Duration(milliseconds: 500),
           curve: Curves.easeOut,
         );
       }
@@ -518,9 +490,11 @@ class _YearEventsPageState extends State<YearEventsPage> {
   @override
   Widget build(BuildContext context) {
     final yearColor = _getYearColor(widget.year.yearNumber);
+    final gradientStart = _getGradientStartColor(widget.year.yearNumber);
+    final gradientEnd = _getGradientEndColor(widget.year.yearNumber);
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Colors.transparent,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           _showAddEventDialog(context);
@@ -530,287 +504,300 @@ class _YearEventsPageState extends State<YearEventsPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: const Icon(Icons.add, color: Colors.white),
       ),
-      body:
-          _isLoading
-              ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(color: yearColor, strokeWidth: 3),
-                    const SizedBox(height: 20),
-                    Text(
-                      "Caricamento eventi...",
-                      style: GoogleFonts.inter(
-                        color: Colors.grey.shade700,
-                        fontSize: 16,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFFDCE4F0),
+              Color(0xFFB8C7DB),
+            ], // Gradient background
+          ),
+        ),
+        child:
+            _isLoading
+                ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(
+                        color: yearColor,
+                        strokeWidth: 3,
                       ),
-                    ),
-                  ],
-                ),
-              )
-              : CustomScrollView(
-                controller: _scrollController,
-                physics: const BouncingScrollPhysics(),
-                slivers: [
-                  SliverAppBar(
-                    expandedHeight: 240.0,
-                    pinned: true,
-                    stretch: true,
-                    backgroundColor: yearColor,
-                    elevation: 0,
-                    leading: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: CircleAvatar(
-                        // ignore: deprecated_member_use
-                        backgroundColor: Colors.white.withOpacity(0.8),
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.arrow_back,
-                            color: Colors.black87,
-                          ),
-                          onPressed: () => Navigator.pop(context),
+                      const SizedBox(height: 20),
+                      Text(
+                        "Caricamento eventi...",
+                        style: GoogleFonts.poppins(
+                          color: Colors.grey.shade700,
+                          fontSize: 16,
                         ),
                       ),
-                    ),
-                    actions: [
-                      PopupMenuButton<String>(
-                        icon: Icon(Icons.more_vert, color: Colors.white),
-                        onSelected: (value) {
-                          if (value == 'filter') {
-                            // Implementa filtro
-                          } else if (value == 'sort') {
-                            // Implementa ordinamento
-                          }
-                        },
-                        itemBuilder:
-                            (context) => [
-                              PopupMenuItem(
-                                value: 'filter',
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.filter_list, color: yearColor),
-                                    SizedBox(width: 10),
-                                    Text('Filtra eventi'),
-                                  ],
+                    ],
+                  ),
+                )
+                : CustomScrollView(
+                  controller: _scrollController,
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
+                    SliverAppBar(
+                      expandedHeight: 240.0,
+                      pinned: true,
+                      stretch: true,
+                      backgroundColor: yearColor,
+                      elevation: 0,
+                      leading: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: CircleAvatar(
+                          backgroundColor: Colors.white.withOpacity(0.8),
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.arrow_back,
+                              color: Colors.black87,
+                            ),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ),
+                      ),
+                      actions: [
+                        PopupMenuButton<String>(
+                          icon: const Icon(
+                            Icons.more_vert,
+                            color: Colors.white,
+                          ),
+                          onSelected: (value) {
+                            if (value == 'filter') {
+                              // Implementa filtro
+                            } else if (value == 'sort') {
+                              // Implementa ordinamento
+                            }
+                          },
+                          itemBuilder:
+                              (context) => [
+                                PopupMenuItem(
+                                  value: 'filter',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.filter_list, color: yearColor),
+                                      const SizedBox(width: 10),
+                                      const Text('Filtra eventi'),
+                                    ],
+                                  ),
+                                ),
+                                PopupMenuItem(
+                                  value: 'sort',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.sort, color: yearColor),
+                                      const SizedBox(width: 10),
+                                      const Text('Ordina eventi'),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                        ),
+                      ],
+                      flexibleSpace: FlexibleSpaceBar(
+                        titlePadding: const EdgeInsets.only(
+                          left: 20,
+                          bottom: 16,
+                          right: 20,
+                        ),
+                        title: Text(
+                          widget.year.title,
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 22,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        background: Hero(
+                          // Adjust tag if needed, ensure it's unique and matches
+                          tag: 'year_card_${widget.year.yearNumber - 1}',
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [gradientStart, gradientEnd],
+                                  ),
                                 ),
                               ),
-                              PopupMenuItem(
-                                value: 'sort',
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.sort, color: yearColor),
-                                    SizedBox(width: 10),
-                                    Text('Ordina eventi'),
-                                  ],
+                              // Decorative pattern
+                              Positioned(
+                                right: -30,
+                                bottom: -30,
+                                child: Icon(
+                                  _getYearIcon(widget.year.yearNumber),
+                                  size: 150,
+                                  color: Colors.white.withOpacity(0.15),
+                                ),
+                              ),
+                              // Overlay gradient
+                              Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.transparent,
+                                      yearColor.withOpacity(0.8),
+                                      yearColor,
+                                    ],
+                                    stops: const [0.5, 0.8, 1.0],
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 60,
+                                left: 20,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: Colors.white.withOpacity(0.3),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    widget.year.academicYear,
+                                    style: GoogleFonts.poppins(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
-                      ),
-                    ],
-                    flexibleSpace: FlexibleSpaceBar(
-                      titlePadding: const EdgeInsets.only(
-                        left: 20,
-                        bottom: 16,
-                        right: 20,
-                      ),
-                      title: Text(
-                        widget.year.title,
-                        style: GoogleFonts.montserrat(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 22,
-                          letterSpacing: -0.5,
+                          ),
                         ),
                       ),
-                      background: Hero(
-                        // Adjust tag if needed, ensure it's unique and matches
-                        tag: 'year_card_${widget.year.yearNumber - 1}',
-                        child: Stack(
-                          fit: StackFit.expand,
+                    ),
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+                      sliver: SliverToBoxAdapter(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            ShaderMask(
-                              shaderCallback: (rect) {
-                                return LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [Colors.transparent, Colors.black],
-                                ).createShader(
-                                  Rect.fromLTRB(0, 0, rect.width, rect.height),
-                                );
-                              },
-                              blendMode: BlendMode.dstIn,
-                              child: Image.network(
-                                widget.year.coverImageUrl,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    // ignore: deprecated_member_use
-                                    color: yearColor.withOpacity(0.3),
-                                  );
-                                },
+                            Text(
+                              widget.year.description,
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                color: Colors.grey.shade800,
+                                height: 1.6,
                               ),
                             ),
-                            Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.transparent,
-                                    // ignore: deprecated_member_use
-                                    yearColor.withOpacity(0.8),
-                                    yearColor,
-                                  ],
-                                  stops: [0.5, 0.8, 1.0],
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              bottom: 60,
-                              left: 20,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  // ignore: deprecated_member_use
-                                  color: Colors.white.withOpacity(0.15),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                    // ignore: deprecated_member_use
-                                    color: Colors.white.withOpacity(0.3),
-                                    width: 1,
+                            const SizedBox(height: 30),
+                            Row(
+                              children: [
+                                Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    color: yearColor.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Icon(
+                                    Icons.event_note,
+                                    color: yearColor,
+                                    size: 20,
                                   ),
                                 ),
-                                child: Text(
-                                  widget.year.academicYear,
-                                  style: GoogleFonts.inter(
-                                    color: Colors.white,
+                                const SizedBox(width: 12),
+                                Text(
+                                  'Eventi',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 22,
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 13,
+                                    color: yearColor,
+                                    letterSpacing: -0.5,
                                   ),
                                 ),
-                              ),
+                                const Spacer(),
+                                TextButton.icon(
+                                  onPressed: () {
+                                    _showAddEventDialog(context);
+                                  },
+                                  icon: Icon(
+                                    Icons.add_circle,
+                                    color: yearColor,
+                                    size: 20,
+                                  ),
+                                  label: Text(
+                                    'Aggiungi',
+                                    style: GoogleFonts.poppins(
+                                      color: yearColor,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  style: TextButton.styleFrom(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
+                                    backgroundColor: yearColor.withOpacity(
+                                      0.08,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
+                            const SizedBox(height: 10),
                           ],
                         ),
                       ),
                     ),
-                  ),
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
-                    sliver: SliverToBoxAdapter(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.year.description,
-                            style: GoogleFonts.inter(
-                              fontSize: 16,
-                              color: Colors.grey.shade800,
-                              height: 1.6,
+                    // Griglia a 3 card per riga con spaziatura ottimizzata
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      sliver: SliverGrid(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3, // Manteniamo 3 colonne
+                              childAspectRatio:
+                                  0.8, // Rapporto d'aspetto per card senza spazio bianco
+                              crossAxisSpacing: 8,
+                              mainAxisSpacing: 8,
                             ),
-                          ),
-                          const SizedBox(height: 30),
-                          Row(
-                            children: [
-                              Container(
-                                width: 36,
-                                height: 36,
-                                decoration: BoxDecoration(
-                                  // ignore: deprecated_member_use
-                                  color: yearColor.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Icon(
-                                  Icons.event_note,
-                                  color: yearColor,
-                                  size: 20,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                'Eventi',
-                                style: GoogleFonts.montserrat(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: yearColor,
-                                  letterSpacing: -0.5,
-                                ),
-                              ),
-                              const Spacer(),
-                              TextButton.icon(
-                                onPressed: () {
-                                  _showAddEventDialog(context);
-                                },
-                                icon: Icon(
-                                  Icons.add_circle,
-                                  color: yearColor,
-                                  size: 20,
-                                ),
-                                label: Text(
-                                  'Aggiungi',
-                                  style: GoogleFonts.inter(
-                                    color: yearColor,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                style: TextButton.styleFrom(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 8,
-                                  ),
-                                  // ignore: deprecated_member_use
-                                  backgroundColor: yearColor.withOpacity(0.08),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                        ],
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          if (index < events.length) {
+                            return GridEventCard(
+                              event: events[index],
+                              yearColor: yearColor,
+                              index: index,
+                              isCustom: index >= widget.year.events.length,
+                              onDelete:
+                                  index >= widget.year.events.length
+                                      ? () => _deleteCustomEvent(
+                                        index - widget.year.events.length,
+                                      )
+                                      : null,
+                            );
+                          }
+                          return null; // Should not happen
+                        }, childCount: events.length),
                       ),
                     ),
-                  ),
-                  // NUOVO LAYOUT: Griglia a 3 card per riga con spaziatura ottimizzata
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    sliver: SliverGrid(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3, // Manteniamo 3 colonne
-                        childAspectRatio:
-                            0.8, // Rapporto d'aspetto per card senza spazio bianco
-                        crossAxisSpacing: 8,
-                        mainAxisSpacing: 8,
-                      ),
-                      delegate: SliverChildBuilderDelegate((context, index) {
-                        if (index < events.length) {
-                          return GridEventCard(
-                            event: events[index],
-                            yearColor: yearColor,
-                            index: index,
-                            isCustom: index >= widget.year.events.length,
-                            onDelete:
-                                index >= widget.year.events.length
-                                    ? () => _deleteCustomEvent(
-                                      index - widget.year.events.length,
-                                    )
-                                    : null,
-                          );
-                        }
-                        return null; // Should not happen
-                      }, childCount: events.length),
+                    const SliverToBoxAdapter(
+                      child: SizedBox(height: 100), // Spazio extra in fondo
                     ),
-                  ),
-                  const SliverToBoxAdapter(
-                    child: SizedBox(height: 100), // Spazio extra in fondo
-                  ),
-                ],
-              ),
+                  ],
+                ),
+      ),
     );
   }
 
@@ -824,20 +811,20 @@ class _YearEventsPageState extends State<YearEventsPage> {
           ),
           title: Text(
             "Conferma eliminazione",
-            style: GoogleFonts.montserrat(
+            style: GoogleFonts.poppins(
               fontWeight: FontWeight.bold,
               color: _getYearColor(widget.year.yearNumber),
             ),
           ),
           content: Text(
             "Sei sicuro di voler eliminare questo evento?",
-            style: GoogleFonts.inter(),
+            style: GoogleFonts.poppins(),
           ),
           actions: [
             TextButton(
               child: Text(
                 "Annulla",
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   color: Colors.grey.shade700,
                   fontWeight: FontWeight.w500,
                 ),
@@ -851,11 +838,14 @@ class _YearEventsPageState extends State<YearEventsPage> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
               ),
               child: Text(
                 "Elimina",
-                style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
               ),
               onPressed: () async {
                 // Make async
@@ -898,7 +888,7 @@ class _YearEventsPageState extends State<YearEventsPage> {
               ),
               title: Text(
                 'Aggiungi un nuovo evento',
-                style: GoogleFonts.montserrat(
+                style: GoogleFonts.poppins(
                   fontWeight: FontWeight.bold,
                   color: yearColor,
                   fontSize: 20,
@@ -909,7 +899,7 @@ class _YearEventsPageState extends State<YearEventsPage> {
                 child: Form(
                   key: formKey,
                   child: SingleChildScrollView(
-                    physics: BouncingScrollPhysics(),
+                    physics: const BouncingScrollPhysics(),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -930,15 +920,15 @@ class _YearEventsPageState extends State<YearEventsPage> {
                               ),
                             ),
                             prefixIcon: Icon(Icons.title, color: yearColor),
-                            labelStyle: GoogleFonts.inter(
+                            labelStyle: GoogleFonts.poppins(
                               color: Colors.grey.shade700,
                             ),
-                            contentPadding: EdgeInsets.symmetric(
+                            contentPadding: const EdgeInsets.symmetric(
                               vertical: 16,
                               horizontal: 16,
                             ),
                           ),
-                          style: GoogleFonts.inter(),
+                          style: GoogleFonts.poppins(),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Inserisci un titolo';
@@ -949,7 +939,7 @@ class _YearEventsPageState extends State<YearEventsPage> {
                             title = value ?? '';
                           },
                         ),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
                         TextFormField(
                           decoration: InputDecoration(
                             labelText: 'Data (es. 12 maggio 2023)',
@@ -970,15 +960,15 @@ class _YearEventsPageState extends State<YearEventsPage> {
                               Icons.calendar_today,
                               color: yearColor,
                             ),
-                            labelStyle: GoogleFonts.inter(
+                            labelStyle: GoogleFonts.poppins(
                               color: Colors.grey.shade700,
                             ),
-                            contentPadding: EdgeInsets.symmetric(
+                            contentPadding: const EdgeInsets.symmetric(
                               vertical: 16,
                               horizontal: 16,
                             ),
                           ),
-                          style: GoogleFonts.inter(),
+                          style: GoogleFonts.poppins(),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Inserisci una data';
@@ -989,7 +979,7 @@ class _YearEventsPageState extends State<YearEventsPage> {
                             date = value ?? '';
                           },
                         ),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
                         TextFormField(
                           decoration: InputDecoration(
                             labelText: 'Descrizione',
@@ -1010,16 +1000,16 @@ class _YearEventsPageState extends State<YearEventsPage> {
                               Icons.description,
                               color: yearColor,
                             ),
-                            labelStyle: GoogleFonts.inter(
+                            labelStyle: GoogleFonts.poppins(
                               color: Colors.grey.shade700,
                             ),
-                            contentPadding: EdgeInsets.symmetric(
+                            contentPadding: const EdgeInsets.symmetric(
                               vertical: 20,
                               horizontal: 16,
                             ),
                             alignLabelWithHint: true,
                           ),
-                          style: GoogleFonts.inter(),
+                          style: GoogleFonts.poppins(),
                           maxLines: 3,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -1031,7 +1021,7 @@ class _YearEventsPageState extends State<YearEventsPage> {
                             description = value ?? '';
                           },
                         ),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
                         TextFormField(
                           decoration: InputDecoration(
                             labelText: 'Contenuto aggiuntivo (opzionale)',
@@ -1052,37 +1042,35 @@ class _YearEventsPageState extends State<YearEventsPage> {
                               Icons.more_horiz,
                               color: yearColor,
                             ),
-                            labelStyle: GoogleFonts.inter(
+                            labelStyle: GoogleFonts.poppins(
                               color: Colors.grey.shade700,
                             ),
-                            contentPadding: EdgeInsets.symmetric(
+                            contentPadding: const EdgeInsets.symmetric(
                               vertical: 20,
                               horizontal: 16,
                             ),
                             alignLabelWithHint: true,
                           ),
-                          style: GoogleFonts.inter(),
+                          style: GoogleFonts.poppins(),
                           maxLines: 2,
                           onSaved: (value) {
                             additionalContent = value ?? '';
                           },
                         ),
-                        SizedBox(height: 24),
+                        const SizedBox(height: 24),
 
                         // Display existing anecdotes
                         if (anecdotes.isNotEmpty) ...[
                           Container(
                             width: double.infinity,
-                            padding: EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                               horizontal: 16,
                               vertical: 12,
                             ),
                             decoration: BoxDecoration(
-                              // ignore: deprecated_member_use
                               color: yearColor.withOpacity(0.05),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                // ignore: deprecated_member_use
                                 color: yearColor.withOpacity(0.2),
                               ),
                             ),
@@ -1091,18 +1079,18 @@ class _YearEventsPageState extends State<YearEventsPage> {
                               children: [
                                 Text(
                                   'Aneddoti aggiunti:',
-                                  style: GoogleFonts.montserrat(
+                                  style: GoogleFonts.poppins(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
                                     color: yearColor,
                                   ),
                                 ),
-                                SizedBox(height: 12),
+                                const SizedBox(height: 12),
                                 ...anecdotes.asMap().entries.map((entry) {
                                   int idx = entry.key;
                                   Anecdote anecdote = entry.value;
                                   return Card(
-                                    margin: EdgeInsets.only(bottom: 10),
+                                    margin: const EdgeInsets.only(bottom: 10),
                                     elevation: 1,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
@@ -1110,7 +1098,7 @@ class _YearEventsPageState extends State<YearEventsPage> {
                                     child: ListTile(
                                       title: Text(
                                         anecdote.title,
-                                        style: GoogleFonts.inter(
+                                        style: GoogleFonts.poppins(
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
@@ -1118,7 +1106,9 @@ class _YearEventsPageState extends State<YearEventsPage> {
                                         anecdote.description,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: GoogleFonts.inter(fontSize: 13),
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 13,
+                                        ),
                                       ),
                                       trailing: IconButton(
                                         icon: Icon(
@@ -1132,42 +1122,41 @@ class _YearEventsPageState extends State<YearEventsPage> {
                                           });
                                         },
                                       ),
-                                      contentPadding: EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 4,
-                                      ),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 4,
+                                          ),
                                     ),
                                   );
                                 }),
                               ],
                             ),
                           ),
-                          SizedBox(height: 24),
+                          const SizedBox(height: 24),
                         ],
 
                         ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
-                            // ignore: deprecated_member_use
                             backgroundColor: yearColor.withOpacity(0.1),
                             foregroundColor: yearColor,
                             elevation: 0,
-                            padding: EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                               horizontal: 20,
                               vertical: 13,
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                               side: BorderSide(
-                                // ignore: deprecated_member_use
                                 color: yearColor.withOpacity(0.3),
                                 width: 1,
                               ),
                             ),
                           ),
-                          icon: Icon(Icons.add),
+                          icon: const Icon(Icons.add),
                           label: Text(
                             'Aggiungi aneddoto',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               fontWeight: FontWeight.w600,
                               fontSize: 14,
                             ),
@@ -1197,7 +1186,7 @@ class _YearEventsPageState extends State<YearEventsPage> {
                 TextButton(
                   child: Text(
                     'Annulla',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color: Colors.grey.shade700,
                       fontWeight: FontWeight.w500,
                     ),
@@ -1211,14 +1200,17 @@ class _YearEventsPageState extends State<YearEventsPage> {
                     backgroundColor: yearColor,
                     foregroundColor: Colors.white,
                     elevation: 0,
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 10,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   child: Text(
                     'Salva',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w600,
                       fontSize: 15,
                     ),
@@ -1270,7 +1262,7 @@ class _YearEventsPageState extends State<YearEventsPage> {
           ),
           title: Text(
             'Aggiungi un aneddoto',
-            style: GoogleFonts.montserrat(
+            style: GoogleFonts.poppins(
               color: yearColor,
               fontWeight: FontWeight.bold,
               fontSize: 20,
@@ -1297,13 +1289,15 @@ class _YearEventsPageState extends State<YearEventsPage> {
                       size: 16,
                       color: yearColor,
                     ),
-                    labelStyle: GoogleFonts.inter(color: Colors.grey.shade700),
-                    contentPadding: EdgeInsets.symmetric(
+                    labelStyle: GoogleFonts.poppins(
+                      color: Colors.grey.shade700,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
                       vertical: 16,
                       horizontal: 16,
                     ),
                   ),
-                  style: GoogleFonts.inter(),
+                  style: GoogleFonts.poppins(),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Inserisci un titolo';
@@ -1314,7 +1308,7 @@ class _YearEventsPageState extends State<YearEventsPage> {
                     title = value ?? '';
                   },
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 TextFormField(
                   decoration: InputDecoration(
                     labelText: 'Descrizione aneddoto',
@@ -1327,14 +1321,16 @@ class _YearEventsPageState extends State<YearEventsPage> {
                       borderSide: BorderSide(color: yearColor, width: 2),
                     ),
                     prefixIcon: Icon(Icons.description, color: yearColor),
-                    labelStyle: GoogleFonts.inter(color: Colors.grey.shade700),
-                    contentPadding: EdgeInsets.symmetric(
+                    labelStyle: GoogleFonts.poppins(
+                      color: Colors.grey.shade700,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
                       vertical: 20,
                       horizontal: 16,
                     ),
                     alignLabelWithHint: true,
                   ),
-                  style: GoogleFonts.inter(),
+                  style: GoogleFonts.poppins(),
                   maxLines: 3,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -1353,7 +1349,7 @@ class _YearEventsPageState extends State<YearEventsPage> {
             TextButton(
               child: Text(
                 'Annulla',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   color: Colors.grey.shade700,
                   fontWeight: FontWeight.w500,
                 ),
@@ -1367,14 +1363,17 @@ class _YearEventsPageState extends State<YearEventsPage> {
                 backgroundColor: yearColor,
                 foregroundColor: Colors.white,
                 elevation: 0,
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
               child: Text(
                 'Aggiungi',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w600,
                   fontSize: 15,
                 ),
@@ -1396,19 +1395,76 @@ class _YearEventsPageState extends State<YearEventsPage> {
   Color _getYearColor(int yearNumber) {
     switch (yearNumber) {
       case 1:
-        return Color(0xFF3949AB); // Indigo
+        return const Color(0xFF4776E6); // Blue
       case 2:
-        return Color(0xFF00897B); // Teal
+        return const Color(0xFF00897B); // Teal
       case 3:
-        return Color(0xFF303F9F); // Indigo
+        return const Color(0xFF8E54E9); // Purple
       case 4:
-        return Color(0xFFF57C00); // Orange
+        return const Color(0xFFFF416C); // Pink
       case 5:
-        return Color(0xFF7B1FA2); // Purple
+        return const Color(0xFF56AB2F); // Green
       case 6: // Periodo dopo la scuola
-        return Color(0xFFD32F2F); // Red
+        return const Color(0xFFFF9966); // Orange
       default:
-        return Color(0xFF3949AB);
+        return const Color(0xFF4776E6);
+    }
+  }
+
+  Color _getGradientStartColor(int yearNumber) {
+    switch (yearNumber) {
+      case 1:
+        return const Color(0xFF4776E6); // Blue
+      case 2:
+        return const Color(0xFF00897B); // Teal
+      case 3:
+        return const Color(0xFF8E54E9); // Purple
+      case 4:
+        return const Color(0xFFFF416C); // Pink
+      case 5:
+        return const Color(0xFF56AB2F); // Green
+      case 6:
+        return const Color(0xFFFF9966); // Orange
+      default:
+        return const Color(0xFF4776E6);
+    }
+  }
+
+  Color _getGradientEndColor(int yearNumber) {
+    switch (yearNumber) {
+      case 1:
+        return const Color(0xFF8E54E9); // Purple
+      case 2:
+        return const Color(0xFF26A69A); // Lighter Teal
+      case 3:
+        return const Color(0xFF4776E6); // Blue
+      case 4:
+        return const Color(0xFFFF4B2B); // Orange-Red
+      case 5:
+        return const Color(0xFFA8E063); // Light Green
+      case 6:
+        return const Color(0xFFFF5E62); // Red
+      default:
+        return const Color(0xFF8E54E9);
+    }
+  }
+
+  IconData _getYearIcon(int yearNumber) {
+    switch (yearNumber) {
+      case 1:
+        return FontAwesomeIcons.school;
+      case 2:
+        return FontAwesomeIcons.bookOpen;
+      case 3:
+        return FontAwesomeIcons.graduationCap;
+      case 4:
+        return FontAwesomeIcons.laptop;
+      case 5:
+        return FontAwesomeIcons.trophy;
+      case 6:
+        return FontAwesomeIcons.rocket;
+      default:
+        return FontAwesomeIcons.calendarAlt;
     }
   }
 }
@@ -1431,11 +1487,8 @@ class GridEventCard extends StatelessWidget {
   });
 
   IconData _getEventIcon() {
-    // Logica per l'icona mantenuta uguale
     if (event.title == 'Primo giorno di scuola') return FontAwesomeIcons.school;
-    // ignore: deprecated_member_use
     if (event.title.contains('DAD')) return FontAwesomeIcons.laptopHouse;
-    // Le altre condizioni possono rimanere...
 
     return isCustom ? FontAwesomeIcons.solidStar : FontAwesomeIcons.calendarDay;
   }
@@ -1443,14 +1496,36 @@ class GridEventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 2,
+      elevation: 4,
       margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: () => _showEventDetails(context),
         child: Stack(
           children: [
+            // Gradient background
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [yearColor.withOpacity(0.7), yearColor],
+                ),
+              ),
+            ),
+
+            // Decorative pattern in background
+            Positioned(
+              right: -20,
+              bottom: -20,
+              child: Icon(
+                _getEventIcon(),
+                size: 60,
+                color: Colors.white.withOpacity(0.15),
+              ),
+            ),
+
             // Immagine di sfondo a pieno formato
             AspectRatio(
               aspectRatio: 0.8, // Controlla il rapporto d'aspetto della card
@@ -1459,12 +1534,10 @@ class GridEventCard extends StatelessWidget {
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
-                    // ignore: deprecated_member_use
                     color: yearColor.withOpacity(0.1),
                     child: Center(
                       child: Icon(
                         _getEventIcon(),
-                        // ignore: deprecated_member_use
                         color: yearColor.withOpacity(0.5),
                         size: 20,
                       ),
@@ -1483,12 +1556,10 @@ class GridEventCard extends StatelessWidget {
                     end: Alignment.bottomCenter,
                     colors: [
                       Colors.transparent,
-                      // ignore: deprecated_member_use
                       Colors.black.withOpacity(0.6),
-                      // ignore: deprecated_member_use
                       Colors.black.withOpacity(0.8),
                     ],
-                    stops: [0.6, 0.8, 1.0],
+                    stops: const [0.6, 0.8, 1.0],
                   ),
                 ),
               ),
@@ -1499,13 +1570,12 @@ class GridEventCard extends StatelessWidget {
               top: 6,
               right: 6,
               child: Container(
-                padding: EdgeInsets.all(4),
+                padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  // ignore: deprecated_member_use
                   color: Colors.black.withOpacity(0.4),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(_getEventIcon(), color: Colors.white, size: 10),
+                child: Icon(_getEventIcon(), color: Colors.white, size: 12),
               ),
             ),
 
@@ -1515,9 +1585,11 @@ class GridEventCard extends StatelessWidget {
                 top: 6,
                 left: 6,
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
-                    // ignore: deprecated_member_use
                     color: Colors.white.withOpacity(0.7),
                     borderRadius: BorderRadius.circular(4),
                   ),
@@ -1531,9 +1603,11 @@ class GridEventCard extends StatelessWidget {
                 bottom: 30,
                 right: 6,
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 1,
+                  ),
                   decoration: BoxDecoration(
-                    // ignore: deprecated_member_use
                     color: Colors.white.withOpacity(0.7),
                     borderRadius: BorderRadius.circular(4),
                   ),
@@ -1545,10 +1619,10 @@ class GridEventCard extends StatelessWidget {
                         size: 6,
                         color: yearColor,
                       ),
-                      SizedBox(width: 2),
+                      const SizedBox(width: 2),
                       Text(
                         '${event.anecdotes.length}',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontSize: 8,
                           fontWeight: FontWeight.bold,
                           color: yearColor,
@@ -1573,24 +1647,27 @@ class GridEventCard extends StatelessWidget {
                     // Titolo
                     Text(
                       event.title,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
-                        shadows: [Shadow(color: Colors.black, blurRadius: 2)],
+                        shadows: [
+                          const Shadow(color: Colors.black, blurRadius: 2),
+                        ],
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(height: 2),
+                    const SizedBox(height: 2),
                     // Data
                     Text(
                       event.date,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 9,
-                        // ignore: deprecated_member_use
                         color: Colors.white.withOpacity(0.9),
-                        shadows: [Shadow(color: Colors.black, blurRadius: 2)],
+                        shadows: [
+                          const Shadow(color: Colors.black, blurRadius: 2),
+                        ],
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -1609,21 +1686,24 @@ class GridEventCard extends StatelessWidget {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () => onDelete!(),
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(8),
-                      topRight: Radius.circular(10), // Match card radius
+                      topRight: Radius.circular(16), // Match card radius
                     ),
                     child: Container(
-                      padding: EdgeInsets.all(4),
+                      padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        // ignore: deprecated_member_use
                         color: Colors.red.withOpacity(0.7),
-                        borderRadius: BorderRadius.only(
+                        borderRadius: const BorderRadius.only(
                           bottomLeft: Radius.circular(8),
-                          topRight: Radius.circular(10), // Match card radius
+                          topRight: Radius.circular(16), // Match card radius
                         ),
                       ),
-                      child: Icon(Icons.close, size: 10, color: Colors.white),
+                      child: const Icon(
+                        Icons.close,
+                        size: 10,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -1642,7 +1722,7 @@ class GridEventCard extends StatelessWidget {
       builder:
           (context) => Container(
             height: MediaQuery.of(context).size.height * 0.85,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(24),
@@ -1650,8 +1730,7 @@ class GridEventCard extends StatelessWidget {
               ),
               boxShadow: [
                 BoxShadow(
-                  // ignore: deprecated_member_use
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black12,
                   blurRadius: 10,
                   offset: Offset(0, -5),
                   spreadRadius: 0.1,
@@ -1673,7 +1752,7 @@ class GridEventCard extends StatelessWidget {
 
                 Expanded(
                   child: CustomScrollView(
-                    physics: BouncingScrollPhysics(),
+                    physics: const BouncingScrollPhysics(),
                     slivers: [
                       SliverToBoxAdapter(
                         child: Padding(
@@ -1689,7 +1768,6 @@ class GridEventCard extends StatelessWidget {
                                     width: 54,
                                     height: 54,
                                     decoration: BoxDecoration(
-                                      // ignore: deprecated_member_use
                                       color: yearColor.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(15),
                                     ),
@@ -1710,7 +1788,7 @@ class GridEventCard extends StatelessWidget {
                                             Expanded(
                                               child: Text(
                                                 event.title,
-                                                style: GoogleFonts.montserrat(
+                                                style: GoogleFonts.poppins(
                                                   fontSize: 22,
                                                   fontWeight: FontWeight.bold,
                                                   height: 1.3,
@@ -1720,15 +1798,15 @@ class GridEventCard extends StatelessWidget {
                                             ),
                                             if (isCustom)
                                               Container(
-                                                margin: EdgeInsets.only(
+                                                margin: const EdgeInsets.only(
                                                   left: 8,
                                                 ),
-                                                padding: EdgeInsets.symmetric(
-                                                  horizontal: 10,
-                                                  vertical: 4,
-                                                ),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 10,
+                                                      vertical: 4,
+                                                    ),
                                                 decoration: BoxDecoration(
-                                                  // ignore: deprecated_member_use
                                                   color: yearColor.withOpacity(
                                                     0.1,
                                                   ),
@@ -1737,7 +1815,7 @@ class GridEventCard extends StatelessWidget {
                                                 ),
                                                 child: Text(
                                                   'Creato da me',
-                                                  style: GoogleFonts.inter(
+                                                  style: GoogleFonts.poppins(
                                                     fontSize: 12,
                                                     color: yearColor,
                                                     fontWeight: FontWeight.w600,
@@ -1746,10 +1824,10 @@ class GridEventCard extends StatelessWidget {
                                               ),
                                           ],
                                         ),
-                                        SizedBox(height: 6),
+                                        const SizedBox(height: 6),
                                         Text(
                                           event.date,
-                                          style: GoogleFonts.inter(
+                                          style: GoogleFonts.poppins(
                                             color: Colors.grey.shade600,
                                             fontSize: 14,
                                           ),
@@ -1768,7 +1846,6 @@ class GridEventCard extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(20),
                                   boxShadow: [
                                     BoxShadow(
-                                      // ignore: deprecated_member_use
                                       color: Colors.black.withOpacity(0.1),
                                       blurRadius: 15,
                                       offset: const Offset(0, 5),
@@ -1787,7 +1864,6 @@ class GridEventCard extends StatelessWidget {
                                         height: 200,
                                         width: double.infinity,
                                         decoration: BoxDecoration(
-                                          // ignore: deprecated_member_use
                                           color: yearColor.withOpacity(0.1),
                                           borderRadius: BorderRadius.circular(
                                             20,
@@ -1800,14 +1876,12 @@ class GridEventCard extends StatelessWidget {
                                             Icon(
                                               Icons.image_not_supported,
                                               size: 50,
-                                              // ignore: deprecated_member_use
                                               color: yearColor.withOpacity(0.3),
                                             ),
-                                            SizedBox(height: 10),
+                                            const SizedBox(height: 10),
                                             Text(
                                               "Immagine non disponibile",
-                                              style: GoogleFonts.inter(
-                                                // ignore: deprecated_member_use
+                                              style: GoogleFonts.poppins(
                                                 color: yearColor.withOpacity(
                                                   0.7,
                                                 ),
@@ -1828,9 +1902,8 @@ class GridEventCard extends StatelessWidget {
                               Row(
                                 children: [
                                   Container(
-                                    padding: EdgeInsets.all(8),
+                                    padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
-                                      // ignore: deprecated_member_use
                                       color: yearColor.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
@@ -1843,7 +1916,7 @@ class GridEventCard extends StatelessWidget {
                                   const SizedBox(width: 10),
                                   Text(
                                     'Descrizione',
-                                    style: GoogleFonts.montserrat(
+                                    style: GoogleFonts.poppins(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                       color: yearColor,
@@ -1854,7 +1927,7 @@ class GridEventCard extends StatelessWidget {
                               ),
                               const SizedBox(height: 12),
                               Container(
-                                padding: EdgeInsets.all(16),
+                                padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
                                   color: Colors.grey.shade50,
                                   borderRadius: BorderRadius.circular(16),
@@ -1865,7 +1938,7 @@ class GridEventCard extends StatelessWidget {
                                 ),
                                 child: Text(
                                   event.description,
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.poppins(
                                     fontSize: 15,
                                     color: Colors.grey.shade800,
                                     height: 1.6,
@@ -1879,9 +1952,8 @@ class GridEventCard extends StatelessWidget {
                                 Row(
                                   children: [
                                     Container(
-                                      padding: EdgeInsets.all(8),
+                                      padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
-                                        // ignore: deprecated_member_use
                                         color: yearColor.withOpacity(0.1),
                                         borderRadius: BorderRadius.circular(10),
                                       ),
@@ -1894,7 +1966,7 @@ class GridEventCard extends StatelessWidget {
                                     const SizedBox(width: 10),
                                     Text(
                                       'Note aggiuntive',
-                                      style: GoogleFonts.montserrat(
+                                      style: GoogleFonts.poppins(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
                                         color: yearColor,
@@ -1907,18 +1979,16 @@ class GridEventCard extends StatelessWidget {
                                 Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    // ignore: deprecated_member_use
                                     color: yearColor.withOpacity(0.05),
                                     borderRadius: BorderRadius.circular(16),
                                     border: Border.all(
-                                      // ignore: deprecated_member_use
                                       color: yearColor.withOpacity(0.2),
                                       width: 1,
                                     ),
                                   ),
                                   child: Text(
                                     event.additionalContent,
-                                    style: GoogleFonts.inter(
+                                    style: GoogleFonts.poppins(
                                       fontSize: 15,
                                       color: Colors.grey.shade800,
                                       height: 1.6,
@@ -1934,9 +2004,8 @@ class GridEventCard extends StatelessWidget {
                                 Row(
                                   children: [
                                     Container(
-                                      padding: EdgeInsets.all(8),
+                                      padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
-                                        // ignore: deprecated_member_use
                                         color: yearColor.withOpacity(0.1),
                                         borderRadius: BorderRadius.circular(10),
                                       ),
@@ -1949,27 +2018,26 @@ class GridEventCard extends StatelessWidget {
                                     const SizedBox(width: 10),
                                     Text(
                                       'Aneddoti',
-                                      style: GoogleFonts.montserrat(
+                                      style: GoogleFonts.poppins(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
                                         color: yearColor,
                                         letterSpacing: -0.3,
                                       ),
                                     ),
-                                    SizedBox(width: 8),
+                                    const SizedBox(width: 8),
                                     Container(
-                                      padding: EdgeInsets.symmetric(
+                                      padding: const EdgeInsets.symmetric(
                                         horizontal: 8,
                                         vertical: 2,
                                       ),
                                       decoration: BoxDecoration(
-                                        // ignore: deprecated_member_use
                                         color: yearColor.withOpacity(0.1),
                                         borderRadius: BorderRadius.circular(20),
                                       ),
                                       child: Text(
                                         '${event.anecdotes.length}',
-                                        style: GoogleFonts.inter(
+                                        style: GoogleFonts.poppins(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
                                           color: yearColor,
@@ -1983,11 +2051,17 @@ class GridEventCard extends StatelessWidget {
                                   return Container(
                                     margin: const EdgeInsets.only(bottom: 14),
                                     decoration: BoxDecoration(
-                                      color: Colors.white,
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                        colors: [
+                                          Colors.white,
+                                          Colors.grey.shade50,
+                                        ],
+                                      ),
                                       borderRadius: BorderRadius.circular(16),
                                       boxShadow: [
                                         BoxShadow(
-                                          // ignore: deprecated_member_use
                                           color: Colors.black.withOpacity(0.05),
                                           blurRadius: 10,
                                           offset: const Offset(0, 2),
@@ -1999,17 +2073,17 @@ class GridEventCard extends StatelessWidget {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Container(
-                                          padding: EdgeInsets.symmetric(
+                                          padding: const EdgeInsets.symmetric(
                                             horizontal: 16,
                                             vertical: 12,
                                           ),
                                           decoration: BoxDecoration(
-                                            // ignore: deprecated_member_use
                                             color: yearColor.withOpacity(0.08),
-                                            borderRadius: BorderRadius.only(
-                                              topLeft: Radius.circular(16),
-                                              topRight: Radius.circular(16),
-                                            ),
+                                            borderRadius:
+                                                const BorderRadius.only(
+                                                  topLeft: Radius.circular(16),
+                                                  topRight: Radius.circular(16),
+                                                ),
                                           ),
                                           child: Row(
                                             children: [
@@ -2022,12 +2096,11 @@ class GridEventCard extends StatelessWidget {
                                               Expanded(
                                                 child: Text(
                                                   anecdote.title,
-                                                  style: GoogleFonts.montserrat(
+                                                  style: GoogleFonts.poppins(
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 16,
                                                     color: yearColor
-                                                    // ignore: deprecated_member_use
-                                                    .withOpacity(0.9),
+                                                        .withOpacity(0.9),
                                                   ),
                                                 ),
                                               ),
@@ -2038,7 +2111,7 @@ class GridEventCard extends StatelessWidget {
                                           padding: const EdgeInsets.all(16),
                                           child: Text(
                                             anecdote.description,
-                                            style: GoogleFonts.inter(
+                                            style: GoogleFonts.poppins(
                                               fontSize: 14,
                                               color: Colors.grey.shade700,
                                               height: 1.5,
@@ -2057,9 +2130,8 @@ class GridEventCard extends StatelessWidget {
                                 Row(
                                   children: [
                                     Container(
-                                      padding: EdgeInsets.all(8),
+                                      padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
-                                        // ignore: deprecated_member_use
                                         color: yearColor.withOpacity(0.1),
                                         borderRadius: BorderRadius.circular(10),
                                       ),
@@ -2072,27 +2144,26 @@ class GridEventCard extends StatelessWidget {
                                     const SizedBox(width: 10),
                                     Text(
                                       'Galleria',
-                                      style: GoogleFonts.montserrat(
+                                      style: GoogleFonts.poppins(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
                                         color: yearColor,
                                         letterSpacing: -0.3,
                                       ),
                                     ),
-                                    SizedBox(width: 8),
+                                    const SizedBox(width: 8),
                                     Container(
-                                      padding: EdgeInsets.symmetric(
+                                      padding: const EdgeInsets.symmetric(
                                         horizontal: 8,
                                         vertical: 2,
                                       ),
                                       decoration: BoxDecoration(
-                                        // ignore: deprecated_member_use
                                         color: yearColor.withOpacity(0.1),
                                         borderRadius: BorderRadius.circular(20),
                                       ),
                                       child: Text(
                                         '${event.additionalImages.length}',
-                                        style: GoogleFonts.inter(
+                                        style: GoogleFonts.poppins(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
                                           color: yearColor,
@@ -2128,7 +2199,6 @@ class GridEventCard extends StatelessWidget {
                                           ),
                                           boxShadow: [
                                             BoxShadow(
-                                              // ignore: deprecated_member_use
                                               color: Colors.black.withOpacity(
                                                 0.08,
                                               ),
@@ -2136,6 +2206,14 @@ class GridEventCard extends StatelessWidget {
                                               offset: const Offset(0, 2),
                                             ),
                                           ],
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                            colors: [
+                                              yearColor.withOpacity(0.7),
+                                              yearColor,
+                                            ],
+                                          ),
                                         ),
                                         child: ClipRRect(
                                           borderRadius: BorderRadius.circular(
@@ -2150,13 +2228,11 @@ class GridEventCard extends StatelessWidget {
                                               stackTrace,
                                             ) {
                                               return Container(
-                                                // ignore: deprecated_member_use
                                                 color: yearColor.withOpacity(
                                                   0.1,
                                                 ),
                                                 child: Icon(
                                                   Icons.broken_image,
-                                                  // ignore: deprecated_member_use
                                                   color: yearColor.withOpacity(
                                                     0.3,
                                                   ),
@@ -2177,12 +2253,12 @@ class GridEventCard extends StatelessWidget {
                                 const SizedBox(height: 36),
                                 Center(
                                   child: ElevatedButton.icon(
-                                    icon: Icon(Icons.delete_outline),
-                                    label: Text('Elimina evento'),
+                                    icon: const Icon(Icons.delete_outline),
+                                    label: const Text('Elimina evento'),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.red.shade600,
                                       foregroundColor: Colors.white,
-                                      padding: EdgeInsets.symmetric(
+                                      padding: const EdgeInsets.symmetric(
                                         horizontal: 20,
                                         vertical: 12,
                                       ),
@@ -2190,7 +2266,7 @@ class GridEventCard extends StatelessWidget {
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
                                       ),
-                                      textStyle: GoogleFonts.inter(
+                                      textStyle: GoogleFonts.poppins(
                                         fontWeight: FontWeight.w600,
                                         fontSize: 15,
                                       ),
@@ -2243,15 +2319,15 @@ class GridEventCard extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.broken_image,
                             size: 50,
                             color: Colors.white60,
                           ),
-                          SizedBox(height: 10),
+                          const SizedBox(height: 10),
                           Text(
                             "Immagine non disponibile",
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               color: Colors.white70,
                               fontSize: 14,
                             ),
@@ -2267,7 +2343,6 @@ class GridEventCard extends StatelessWidget {
                 right: 20,
                 child: Container(
                   decoration: BoxDecoration(
-                    // ignore: deprecated_member_use
                     color: Colors.black.withOpacity(0.6),
                     shape: BoxShape.circle,
                   ),
@@ -2286,12 +2361,6 @@ class GridEventCard extends StatelessWidget {
     );
   }
 }
-
-// --- FavoritesPage REMOVED ---
-// class FavoritesPage extends StatelessWidget { ... }
-
-// --- ProfilePage REMOVED ---
-// class ProfilePage extends StatelessWidget { ... }
 
 // Implementazione delle classi di modello per la persistenza dei dati
 class SchoolYear {
@@ -2383,8 +2452,6 @@ class Anecdote {
 class EventStorage {
   static const String _keyPrefix = 'custom_events_';
 
-  static get import => null;
-
   // Salva gli eventi personalizzati per un determinato anno
   static Future<void> saveCustomEvents(
     int yearNumber,
@@ -2417,8 +2484,6 @@ class EventStorage {
         return SchoolEvent.fromJson(eventMap);
       }).toList();
     } catch (e) {
-      // Optionally clear corrupted data
-      // await prefs.remove('$_keyPrefix$yearNumber');
       return []; // Return empty list on error
     }
   }
@@ -2433,10 +2498,6 @@ class EventStorage {
         customEventIndex >= currentCustomEvents.length) {
       return;
     }
-    import;
-    'dart:developer' as developer;
-    import;
-    'package:flutter/foundation.dart'; // For kIsWeb
 
     currentCustomEvents.removeAt(
       customEventIndex,
@@ -2469,15 +2530,12 @@ class EventStorage {
   }
 }
 
-// ignore: camel_case_types
-class developer {}
-
 // Sample data for the school years - inserisci qui l'array schoolYears aggiornato
 final List<SchoolYear> schoolYears = [
   SchoolYear(
     yearNumber: 1,
     title: 'Primo Anno',
-    academicYear: '2019-2020',
+    academicYear: '2020-2021',
     shortDescription: 'L\'inizio del nostro percorso insieme',
     description:
         'Il primo anno è stato un momento fondamentale per la nostra classe. Abbiamo acquisito le competenze base dell\'informatica e stabilito relazioni interpersonali significative, costruendo le fondamenta per un percorso formativo condiviso. L\'anno scolastico è stato caratterizzato dall\'imprevista emergenza sanitaria che ha portato all\'implementazione della didattica a distanza.',
@@ -2594,7 +2652,7 @@ final List<SchoolYear> schoolYears = [
   SchoolYear(
     yearNumber: 2,
     title: 'Secondo Anno',
-    academicYear: '2020-2021',
+    academicYear: '2021-2022',
     shortDescription: 'Approfondimento e nuove sfide',
     description:
         'Il secondo anno è stato segnato dalla didattica a distanza, ma nonostante questo abbiamo continuato a crescere e imparare insieme, affrontando nuove sfide e approfondendo le nostre conoscenze nel campo dell\'informatica. Nuove amicizie si sono formate e abbiamo vissuto esperienze indimenticabili nonostante il periodo difficile.',
@@ -2694,7 +2752,7 @@ final List<SchoolYear> schoolYears = [
   SchoolYear(
     yearNumber: 3,
     title: 'Terzo Anno',
-    academicYear: '2021-2022',
+    academicYear: '2022-2023',
     shortDescription: 'Specializzazione e crescita',
     description:
         'Il terzo anno ha segnato l\'inizio della nostra specializzazione in informatica. Abbiamo iniziato a studiare programmazione avanzata, database e reti, gettando le basi per il nostro futuro professionale. Un anno di cambiamenti, nuove sfide e anche qualche momento di tensione che ha messo alla prova la nostra coesione come gruppo classe.',
@@ -2770,7 +2828,7 @@ final List<SchoolYear> schoolYears = [
   SchoolYear(
     yearNumber: 4,
     title: 'Quarto Anno',
-    academicYear: '2022-2023',
+    academicYear: '2023-2024',
     shortDescription: 'Progetti e crescente autonomia',
     description:
         'Il quarto anno è stato caratterizzato da progetti sempre più complessi e da una crescente autonomia. È stato un anno in cui abbiamo visto i primi frutti del nostro studio, ma anche un anno molto faticoso per la quantità di progetti, molto più impegnativi rispetto agli anni precedenti. Abbiamo iniziato a collaborare con aziende esterne e a sviluppare applicazioni reali, mettendo in pratica tutto ciò che avevamo imparato fino a quel momento. Questa esperienza ci ha permesso di crescere sia a livello tecnico che personale, preparandoci alle sfide future con maggiore consapevolezza e determinazione.',
