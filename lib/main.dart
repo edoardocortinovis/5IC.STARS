@@ -11,6 +11,7 @@ import 'access_section/access_page.dart';
 import 'home_page.dart';
 import 'services/auth_service.dart';
 import 'models/user_model.dart'; // Importa il tuo modello User
+import 'game_screen.dart'; // Importa la schermata del gioco
 
 const String userBoxName = 'users'; // Nome del box Hive per gli utenti
 
@@ -42,7 +43,7 @@ class MyApp extends StatelessWidget {
   final bool isLoggedIn;
   // final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>(); // Mantieni se necessario
 
-  MyApp({super.key, required this.isLoggedIn});
+  const MyApp({super.key, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
@@ -114,11 +115,11 @@ class MyApp extends StatelessWidget {
             borderSide: const BorderSide(color: Color(0xFF5E17EB), width: 2),
           ),
           labelStyle: GoogleFonts.poppins(color: Colors.grey.shade700),
-          prefixIconColor: MaterialStateColor.resolveWith((states) {
-            if (states.contains(MaterialState.focused)) {
+          prefixIconColor: WidgetStateColor.resolveWith((states) {
+            if (states.contains(WidgetState.focused)) {
               return const Color(0xFF5E17EB);
             }
-            if (states.contains(MaterialState.error)) {
+            if (states.contains(WidgetState.error)) {
               return Colors.redAccent;
             }
             return Colors.grey.shade600;
@@ -130,6 +131,7 @@ class MyApp extends StatelessWidget {
         '/register': (context) => const RegistrationPage(),
         '/login': (context) => const AccessPage(),
         '/home': (context) => const HomePage(),
+        '/game': (context) => const GameScreen(), // Aggiunta la route per il gioco
       },
     );
   }

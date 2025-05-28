@@ -209,7 +209,7 @@ class _AccessPageState extends State<AccessPage> {
           borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
         ),
         filled: true,
-        fillColor: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+        fillColor: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
       ),
       obscureText: obscureText,
       keyboardType: keyboardType,

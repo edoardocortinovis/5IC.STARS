@@ -3,6 +3,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 // Rimuovi: import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_service.dart'; // Importa AuthService
+import '/news_page.dart';
+import '/game_screen.dart'; // Sostituisci con il percorso corretto
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -190,8 +192,11 @@ class _HomePageState extends State<HomePage> {
                         ),
                         onTap: () {
                           // Navigate to game 2
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Coming soon!')),
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const GameScreen(),
+                            ),
                           );
                         },
                       ),
@@ -209,9 +214,12 @@ class _HomePageState extends State<HomePage> {
                         ),
                         height: 180,
                         onTap: () {
-                          // Navigate to memories section
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Coming soon!')),
+                          // Navigate to news page
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const NewsPage(),
+                            ),
                           );
                         },
                       ),
