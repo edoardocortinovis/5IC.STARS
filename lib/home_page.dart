@@ -6,6 +6,7 @@ import '../services/auth_service.dart'; // Importa AuthService
 import '/news_page.dart';
 import '/game_screen.dart';
 import 'word_puzzle_game.dart'; // Sostituisci con il percorso corretto
+import 'meme_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -254,8 +255,8 @@ class _HomePageState extends State<HomePage> {
                           const SizedBox(width: 16),
                           Expanded(
                             child: _buildSquareCard(
-                              title: 'INTERVIEW',
-                              icon: FontAwesomeIcons.microphone,
+                              title: 'MEME',
+                              icon: FontAwesomeIcons.faceLaughWink,
                               gradient: const LinearGradient(
                                 colors: [Color(0xFF834D9B), Color(0xFFD04ED6)],
                                 begin: Alignment.topLeft,
@@ -263,8 +264,11 @@ class _HomePageState extends State<HomePage> {
                               ),
                               onTap: () {
                                 // Navigate to interviews
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Coming soon!')),
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const MemePage(),
+                                  ),
                                 );
                               },
                             ),
